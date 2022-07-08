@@ -176,14 +176,23 @@
         </div>
 
         <!-- Remote play status -->
-        <div class="d-flex aligh-items-center justify-content-center" style="margin-top: 5px; color: #2d921a; align-items: center">
-          <i class="bi bi-speaker"></i>
-          <span class="mx-2" style="font-size: small;">Listening on Tim's MacBook Pro</span>
+        <div id="remoteConnectState" class="d-flex aligh-items-center justify-content-center" style="margin-top: 5px; color: #2d921a; align-items: center">
+          <a id="remoteContectStateBtn" href="#" class="d-inline-flex text-decoration-none rounded" data-bs-toggle="popover" data-bs-placement="top" title="Popover title" onclick="openAllDevicesList()">
+            <i class="bi bi-speaker"></i>
+            <span class="mx-2" style="font-size: small;">Listening on Tim's MacBook Pro</span>
+          </a>
+          <div id="allDeviceList" class="connect-device-list-container">
+            <div style="text-align:center;">
+              <h4>Connect to a device</h4>
+            </div>
+            <div id="hiddenPopoverContent" class="list-group w-auto"></div>
+
+          </div>
         </div>
       </div>
 
       <div>
-        <button id="playDevicesBtn" type="button" class="btn btn-outline-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" onclick="playOnLocal()">
+        <button id="playDevicesBtn" type="button" class="btn btn-outline-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
           <i class="bi bi-music-player"></i>
           <span class="visually-hidden">playOnLocal</span>
         </button>
@@ -206,6 +215,7 @@
   <!-- Babel Script -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <script src="./playback.js"></script>
   <!-- Spotify Web Player SDK -->
   <script src="https://sdk.scdn.co/spotify-player.js" type="module"></script>
 
@@ -221,7 +231,6 @@
 
   <!-- Core Scripts -->
   <script src="./devices.js"></script>
-  <script src="./playback.js"></script>
   <script src="./index.js"></script>
 </body>
 
