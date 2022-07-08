@@ -1,0 +1,7 @@
+node_modules
+
+mock_data
+
+package-lock.json
+
+.DS_Store
