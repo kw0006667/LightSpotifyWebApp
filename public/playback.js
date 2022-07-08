@@ -71,6 +71,7 @@ function initWebPlayback(token) {
                 console.log('Position in Song', state.position);
                 console.log('Duration of Song', state.duration);
             }
+
         });
 
         player.connect();
@@ -267,6 +268,8 @@ function startFetchingPlayback() {
                 else {
                     Devices.currentDeviceId = Playback._deviceId;
                 }
+
+                updateRemoteConnectState();
             }
             
             
@@ -424,5 +427,26 @@ function updateTrackDurationInfo(track) {
     let trackDuration_Element = document.getElementById('trackDuration');
     if (trackDuration_Element) {
         trackDuration_Element.innerText = new Date(track.duration_ms).toISOString().slice(14, 19);
+    }
+}
+
+function updateRemoteConnectState() {
+    let remoteConnectState_Element = document.getElementById('remoteContectStateBtn');
+    if (remoteConnectState_Element) {
+        let connectedDevice_Element = remoteConnectState_Element.getElementsByTagName("span").item(0);
+        let connectedDeviceStr = "";
+        if (connectedDevice_Element) {
+            if (Playback._currentPlaybackData.device.id === Playback._deviceId) {
+                connectedDeviceStr = "Listening on this device";
+                // remoteConnectState_Element.classList.remove("d-flex");
+                // remoteConnectState_Element.style.display = "none";
+            } else {
+                connectedDeviceStr = "Listening on " + Playback._currentPlaybackData.device.name;
+                // remoteConnectState_Element.classList.add("d-flex");
+            }
+            connectedDevice_Element.innerHTML = connectedDeviceStr;
+        }
+        // remoteConnectState_Element.classList.remove("d-flex");
+        // remoteConnectState_Element.style.display = isPlayLocal ? "none" : "flex";
     }
 }

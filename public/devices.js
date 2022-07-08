@@ -26,6 +26,10 @@ var Devices = {
     currentDeviceId: ''
 };
 
+var _isRender = false;
+var _isAllDeviceListOpened = false;
+let _fetchAllDevicesInterval = 1;
+
 function getAvailableDevices(requestConfig) {
     if (!requestConfig) {
         return;
@@ -33,25 +37,30 @@ function getAvailableDevices(requestConfig) {
 
     requestConfig.headers["Content-Type"] = 'application/json';
 
-    fetch('https://api.spotify.com/v1/me/player/devices', requestConfig)
-    .then(response => {
-        return response.json();
-    })
-    .then(data => {
-        if (data.devices?.length > 0) {
-            generateDevicesDOMElements(data.devices);
-            data.devices.forEach(device => {
-                if (device.is) {
-                    
-                }
-                console.log(`${device.type}\t${device.name}`);
-            });
-            Devices.allDevices = [...data.devices];
-        }
-    })
-    .catch(reason => {
-        console.error(`getAvailableDevices:\n${reason}`);
-    });
+    setTimeout(() => {
+        fetch('https://api.spotify.com/v1/me/player/devices', requestConfig)
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            if (data.devices?.length > 0) {
+                Devices.allDevices = [];
+
+                generateDevicesDOMElements(data.devices);
+                data.devices.forEach(device => {
+                    console.log(`${device.type}\t${device.name}`);
+                });
+                Devices.allDevices = [...data.devices];
+            }
+        })
+        .catch(reason => {
+            console.error(`getAvailableDevices:\n${reason}`);
+        })
+        .finally(() => {
+            _fetchAllDevicesInterval = 5000;
+            getAvailableDevices(requestConfig);
+        });
+    }, _fetchAllDevicesInterval);
 }
 
 function updateCurrentPlayingDevice() {
@@ -72,6 +81,107 @@ function generateDevicesDOMElements(devices) {
                 devices_element.appendChild(li);
             });
         }
-    }
+
+        let devicesContainer = document.getElementById('hiddenPopoverContent');
+        if (devicesContainer && !_isRender) {
+            let allDevicesHtmlStr = '';
+            devices.forEach(device => {
+                let activeCss = "";
+                if (Devices.currentDeviceId === device.id) {
+                    activeCss = "active-device";
+                }
+                allDevicesHtmlStr += `
+                <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3 ${activeCss}" aria-current="true" data-deviceid="${device.id}" onclick="transferPlayDevice(this)">
+                    <span style="font-size: 32px;"><i class="bi bi-laptop" ></i></span>
+                    <div>
+                        <span>${device.name}</span>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-speaker"></i>
+                            <span style="margin-left: 5px; font-size: 14px;">${device.type}</span>
+                        </div>
+                    </div>
+                </a>
+                `;
+            });
+            devicesContainer.innerHTML = allDevicesHtmlStr;
+            // _isRender = true;
+            // let options = {
+            //     html: true,
+            //     title: "Connect to a device",
+            //     //html element
+            //     //content: $("#popover-content")
+            //     // content: $('[data-name="popover-content"]')
+            //     content: devicesContainer
+            //     //Doing below won't work. Shows title only
+            //     //content: $("#popover-content").html()
     
+            // }
+            // let exampleEl = document.getElementById('remoteContectStateBtn');
+            // let popover = new bootstrap.Popover(exampleEl, options);
+
+            // _isRender = true;
+        }
+        // let allDevices = devices.map(device => 
+        //     <DeviceDOM key={device.id} device={device} />
+        // );
+        // ReactDOM.render(
+        //     <div data-name="popover-content">
+        //         {allDevices}
+        //     </div>
+        //     , devicesContainer
+        // );
+
+        // let popoverContent = document.querySelector('[data-name="popover-content"]')
+
+        
+    }
+
+    
+
+    // let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    // let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+    //   return new bootstrap.Popover(popoverTriggerEl)
+    // });
+    
+}
+
+function openAllDevicesList() {
+    let allDeviceList_Element = document.getElementById('allDeviceList');
+    if (!allDeviceList_Element) {
+        return;
+    }
+
+    if (_isAllDeviceListOpened) {
+        allDeviceList_Element.classList.remove('connect-device-list-container-visible');    
+    } else {
+        allDeviceList_Element.classList.add('connect-device-list-container-visible');
+    }
+
+    _isAllDeviceListOpened = !_isAllDeviceListOpened;
+}
+
+function transferPlayDevice(element) {
+    let id = element.getAttribute("data-deviceid");
+    if (Devices.currentDeviceId === id) {
+        return;
+    }
+
+    let currentRequestConfig = Object.assign({}, globalRequestConfig);
+    currentRequestConfig.headers["Content-Type"] = 'application/json';
+    let body = {
+        device_ids: [id],
+        play: true
+    };
+    currentRequestConfig.body = JSON.stringify(body);
+    currentRequestConfig.method = "PUT";
+
+    fetch('https://api.spotify.com/v1/me/player', currentRequestConfig)
+    .then(response => {
+        if (response.status == 204) {
+            console.log(`playOnLocal:\t${response}`);
+        }
+    })
+    .catch(reason => {
+        console.error(`playOnLocal:\n${reason}`);
+    });
 }

@@ -140,3 +140,37 @@ footer {
 th, td  {
   align-items: center;
 }
+
+#remoteContectStateBtn {
+  color: green;
+  text-decoration: none;
+  
+}
+
+.connect-device-list-container {
+  position: absolute;
+  bottom: 60px;
+  background-color: rgb(255, 255, 255);
+  /* border-color: red; */
+  /* border-width: thin;
+  border-style: solid; */
+  padding: 5px;
+  min-width: 250px;
+  min-height: 200px;
+  /* backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  filter: opacity(0.9);
+  -webkit-filter: opacity(0.9); */
+  display: none;
+  box-shadow: 0 4px 12px 4px rgba(0, 0, 0, .5);
+}
+.connect-device-list-container-visible {
+  -webkit-animation: fadeIn 500ms cubic-bezier(.3,0,0,1);
+  /* bezier(.3,0,0,1); */
+  animation: fadeIn 500ms cubic-bezier(.3,0,0,1);
+  display: block;
+}
+
+.active-device {
+  color: green;
+}
