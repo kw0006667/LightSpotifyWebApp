@@ -90,12 +90,10 @@ function refreshToken() {
     .then(data => {
         if (data?.access_token) {
             document.cookie.replace('access_token', data.access_token);
-            {
-                globalRequestConfig = {
-                    headers: {
-                        'Authorization': 'Bearer ' + data.access_token
-                    }
-                };
+            globalRequestConfig = {
+                headers: {
+                    'Authorization': 'Bearer ' + data.access_token
+                }
             };
         }
     })
