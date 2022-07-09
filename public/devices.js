@@ -40,10 +40,15 @@ function getAvailableDevices(requestConfig) {
     setTimeout(() => {
         fetch('https://api.spotify.com/v1/me/player/devices', requestConfig)
         .then(response => {
-            return response.json();
+            if (response.status === 200) {
+                return response.json();
+            } else if (response.status === 401) {
+                refreshToken();
+                return;
+            }
         })
         .then(data => {
-            if (data.devices?.length > 0) {
+            if (data?.devices?.length > 0) {
                 Devices.allDevices = [];
 
                 generateDevicesDOMElements(data.devices);
