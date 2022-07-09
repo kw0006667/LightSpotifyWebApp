@@ -89,42 +89,26 @@ function generateDevicesDOMElements(devices) {
 
         let devicesContainer = document.getElementById('hiddenPopoverContent');
         if (devicesContainer && !_isRender) {
-            let allDevicesHtmlStr = '';
+            let allDevicesHtmlStr = "";
             devices.forEach(device => {
                 let activeCss = "";
                 if (Devices.currentDeviceId === device.id) {
                     activeCss = "active-device";
                 }
                 allDevicesHtmlStr += `
-                <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3 ${activeCss}" aria-current="true" data-deviceid="${device.id}" onclick="transferPlayDevice(this)">
-                    <span style="font-size: 32px;"><i class="bi bi-laptop" ></i></span>
+                <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-1 ${activeCss}" aria-current="true" data-deviceid="${device.id}" onclick="transferPlayDevice(this)">
+                    <span style="font-size: 30px;"><i class="bi bi-laptop" ></i></span>
                     <div>
-                        <span>${device.name}</span>
+                        <span style="font-size: 14px;">${device.name}</span>
                         <div class="d-flex align-items-center">
                             <i class="bi bi-speaker"></i>
-                            <span style="margin-left: 5px; font-size: 14px;">${device.type}</span>
+                            <span style="margin-left: 5px; font-size: 12px;">${device.type}</span>
                         </div>
                     </div>
                 </a>
                 `;
             });
             devicesContainer.innerHTML = allDevicesHtmlStr;
-            // _isRender = true;
-            // let options = {
-            //     html: true,
-            //     title: "Connect to a device",
-            //     //html element
-            //     //content: $("#popover-content")
-            //     // content: $('[data-name="popover-content"]')
-            //     content: devicesContainer
-            //     //Doing below won't work. Shows title only
-            //     //content: $("#popover-content").html()
-    
-            // }
-            // let exampleEl = document.getElementById('remoteContectStateBtn');
-            // let popover = new bootstrap.Popover(exampleEl, options);
-
-            // _isRender = true;
         }
         // let allDevices = devices.map(device => 
         //     <DeviceDOM key={device.id} device={device} />
@@ -135,19 +119,7 @@ function generateDevicesDOMElements(devices) {
         //     </div>
         //     , devicesContainer
         // );
-
-        // let popoverContent = document.querySelector('[data-name="popover-content"]')
-
-        
-    }
-
-    
-
-    // let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    // let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-    //   return new bootstrap.Popover(popoverTriggerEl)
-    // });
-    
+    }    
 }
 
 function openAllDevicesList() {
