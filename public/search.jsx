@@ -49,6 +49,9 @@ function searchInput(event) {
         .then(response => {
             if (response.status === 200) {
                 return response.json();
+            } else if (response.status === 401) {
+                refreshToken();
+                return;
             }
         })
         .then(data => {

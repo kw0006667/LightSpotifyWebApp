@@ -13,12 +13,11 @@ var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var cookies = require('cookie');
+var authConfig = require('./public/auth.json');
 
-
-var client_id = ''; // Your client id
-var client_secret = ''; // Your secret
-var redirect_uri = 'http://localhost:4000/callback'; // Your redirect uri
-
+var client_id = authConfig.client_id; // Your client id
+var client_secret = authConfig.client_secret; // Your secret
+var redirect_uri = authConfig.redirect_uri; // Your redirect uri
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
@@ -133,6 +132,8 @@ app.get('/refresh_token', function(req, res) {
     res.redirect('/#');
   }
 
+  var clientidsecret = new Buffer(client_id + ':' + client_secret).toString('base64');
+
   var authOptions = {
     url: 'https://accounts.spotify.com/api/token',
     headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
@@ -150,7 +151,8 @@ app.get('/refresh_token', function(req, res) {
       //   'access_token': access_token
       // });
       res.cookie('access_token', access_token);
-      res.redirect('/');
+      // res.redirect('/');
+      res.send(JSON.stringify({access_token: access_token}));
     }
   });
 });

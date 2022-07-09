@@ -32,7 +32,12 @@ function fetchUserPlaylists(userId, requestConfig, nextPlaylistsUrl = null) {
 
     fetch(requestUrl, requestConfig)
     .then(response => {
-        return response.json();
+        if (response.status === 200) {
+            return response.json();
+        } else if (response.status === 401) {
+            refreshToken();
+            return;
+        }
     })
     .then(data => {
         console.log(`fetchUserPlaylists: \n${data}`);
@@ -132,7 +137,12 @@ function playlistPageContent(id) {
 
     fetch(`https://api.spotify.com/v1/playlists/${id}`, playlists._requestConfig)
     .then(response => {
-        return response.json();
+        if (response.status === 200) {
+            return response.json();
+        } else if (response.status === 401) {
+            refreshToken();
+            return;
+        }       
     })
     .then(data => {
         playlistPageContentLoad(data);

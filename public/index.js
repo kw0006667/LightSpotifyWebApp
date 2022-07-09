@@ -24,17 +24,6 @@ function init() {
         alert(`There was an error during the authentication: \n${error}`);
     } else {
         if (access_token) {
-            if (oauthSource) {
-                // oauthSource.innerHTML =
-                // `
-                // <h2>oAuth info</h2>
-                // <dl class="dl-horizontal">
-                //   <dt>Access token</dt><dd class="text-overflow">${access_token}</dd>
-                //   <dt>Refresh token</dt><dd class="text-overflow">${refresh_token}</dd>
-                // </dl>
-                // `;
-            }
-
             initWebPlayback(access_token);
 
             let requestConfig = {
@@ -84,6 +73,36 @@ function init() {
             }
         }
     }
+}
+
+function refreshToken() {
+    let refresh_token = getHashParams().refresh_token;
+    if (!refresh_token) {
+        return;
+    }
+
+    fetch('/refresh_token')
+    .then(response => {
+        if (response.status === 200) {
+            return response.json();
+        }
+    })
+    .then(data => {
+        if (data?.access_token) {
+            document.cookie.replace('access_token', data.access_token);
+            {
+                globalRequestConfig = {
+                    headers: {
+                        'Authorization': 'Bearer ' + data.access_token
+                    }
+                };
+            };
+        }
+    })
+    .catch(reason => {
+        console.error(`Refresh Token:${reason}`);
+    });
+    
 }
 
 function getHashParams() {
