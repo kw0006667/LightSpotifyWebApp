@@ -30,11 +30,11 @@ var _isRender = false;
 var _isAllDeviceListOpened = false;
 let _fetchAllDevicesInterval = 1;
 
-function getAvailableDevices(requestConfig) {
-    if (!requestConfig) {
+function getAvailableDevices() {
+    if (!globalRequestConfig) {
         return;
     }
-
+    let requestConfig = Object.assign({}, globalRequestConfig);
     requestConfig.headers["Content-Type"] = 'application/json';
 
     setTimeout(() => {

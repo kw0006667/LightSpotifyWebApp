@@ -9,6 +9,9 @@ exports.initPlaybackStatus = initPlaybackStatus;
 /**
  * @private
  */
+
+const RepeatState = ["off", "context", "track"];
+
 let Playback = {
     _requestConfig: null,
     _userId: null,
@@ -17,19 +20,30 @@ let Playback = {
     _previousPlaybackData: null,
     _playerInstance: null,
     _deviceId: null,
-    _currentPlayingTrack: null
+    _currentPlayingTrack: null,
+    _shuffle_state: null,
+    _repeat_state: RepeatState[0],
+    _currentVolume: 50
 };
 
 function initWebPlayback(token) {
     let access_token = token;
+    if (localStorage.getItem("lastPlaybackData")) {
+        Playback._currentPlaybackData = JSON.parse(localStorage.getItem('lastPlaybackData'));
+        Playback._repeat_state = Playback._currentPlaybackData.repeat_state;
+        Playback._currentVolume = Playback._currentPlaybackData.device.volume_percent;
+    }
+    updateVolumeState(Playback._currentVolume);
+
     window.onSpotifyWebPlaybackSDKReady = () => {
         const token = access_token;
         const player = new Spotify.Player({
             name: 'Light Web Spotify Player',
             getOAuthToken: cb => { 
-                cb(token); 
+                let access_token = parse(document.cookie).access_token;
+                cb(access_token); 
             },
-            volume: 0.5
+            volume: Playback._currentVolume / 100
         });
 
         // Ready
@@ -37,11 +51,10 @@ function initWebPlayback(token) {
             console.log('Ready with Device ID', device_id);
             Playback._deviceId = device_id;
             if (localStorage.getItem("lastPlaybackData")) {
-                Playback._currentPlaybackData = JSON.parse(localStorage.getItem('lastPlaybackData'));
                 Devices.currentDeviceId = device_id;
             }
             // initPlaybackStatus(playerInstance);
-            getAvailableDevices(globalRequestConfig);
+            getAvailableDevices();
             startFetchingPlayback();
         });
 
@@ -183,6 +196,92 @@ function playOnLocal() {
     }
 }
 
+function shuffleAction() {
+    if (Playback._playerInstance && globalRequestConfig) {
+        let currentRequestConfig = Object.assign({}, globalRequestConfig);
+        currentRequestConfig.headers["Content-Type"] = 'application/json';
+        currentRequestConfig.method = "PUT";
+
+        fetch(`https://api.spotify.com/v1/me/player/shuffle?device_id=${Devices.currentDeviceId}&state=${!Playback._shuffle_state}`, currentRequestConfig)
+        .then(response => {
+            if (response.ok) {
+                console.log(`Shuffle set to: ${!Playback._shuffle_state}`);
+                Playback._shuffle_state = !Playback._shuffle_state;
+            }
+        })
+        .catch(reason => {
+            console.error(`shuffleAction\n${reason}`);
+        });
+    }
+}
+
+function repeatAction() {
+    if (Playback._playerInstance && globalRequestConfig) {
+        let currentRequestConfig = Object.assign({}, globalRequestConfig);
+        currentRequestConfig.headers["Content-Type"] = 'application/json';
+        currentRequestConfig.method = "PUT";
+
+        let repeatMode = (RepeatState.indexOf(Playback._repeat_state) + 1) % 3;
+        
+
+        fetch(`https://api.spotify.com/v1/me/player/repeat?device_id=${Devices.currentDeviceId}&state=${RepeatState[repeatMode]}`, currentRequestConfig)
+        .then(response => {
+            if (response.ok) {
+                console.log(`RepeatMode set to: ${RepeatState[repeatMode]}`);
+                Playback._repeat_state = RepeatState[repeatMode];
+                // Playback._shuffle_state = !Playback._shuffle_state;
+            }
+        })
+        .catch(reason => {
+            console.error(`repeatAction\n${reason}`);
+        });
+    }
+}
+
+function adjustVolume(element) {
+    if (element.getAttribute("data-start") === "true") {
+        let volumeSlider_Element = document
+        if (Playback._playerInstance && Playback._deviceId === Devices.currentDeviceId) {
+            Playback._currentVolume = Number.parseFloat((element.value / 100).toFixed(2));
+            Playback._playerInstance.setVolume(Playback._currentVolume).then(() => {
+                console.log(`Volume adjusting...${element.value}`);
+                updateVolumeState();
+            });
+        }
+    }
+    
+}
+
+function startAdjustVolume(element) {
+    if (element) {
+        element.setAttribute("data-start", "true");
+        console.log(element.value);
+        updateVolumeState();
+    }
+}
+
+function adjustVolumeDone(element) {
+    element.setAttribute("data-start", "false");
+
+    if (Playback._currentPlaybackData.device.id !== Playback._deviceId) {
+        let currentRequestConfig = Object.assign({}, globalRequestConfig);
+        currentRequestConfig.headers["Content-Type"] = 'application/json';
+        currentRequestConfig.method = "PUT";
+
+        fetch(`https://api.spotify.com/v1/me/player/volume?device_id=${Devices.currentDeviceId}&volume_percent=${element.value}`, currentRequestConfig)
+        .then(response => {
+            if (response.ok) {
+                console.log(`Volume adjusted: ${element.value}`);
+            }
+        })
+        .catch(reason => {
+            console.error(`adjustVolume:\n${reason}`);
+        });
+    }
+
+    updateVolumeState();
+}
+
 function initPlaybackStatus(playbackInstance) {
     // _playback._userId = userId;
     // _playback._requestConfig = requestConfig;
@@ -262,6 +361,19 @@ function startFetchingPlayback() {
                     updateTrackDurationInfo(Playback._currentPlaybackData?.item);
                 }
 
+                if (!Playback._shuffle_state ||
+                    Playback._currentPlaybackData.device.id !== Playback._deviceId) {
+                    Playback._shuffle_state = Playback._currentPlaybackData.shuffle_state;
+                }
+
+                
+                    Playback._repeat_state = Playback._currentPlaybackData.repeat_state;
+                
+                
+                Playback._currentVolume = Playback._currentPlaybackData.device.volume_percent;
+                if (Playback._currentPlaybackData.device.id !== Playback._deviceId) {
+                    updateVolumeState(Playback._currentVolume);
+                }
                 updatePlaybackStateBar(Playback._currentPlaybackData, Playback._previousPlaybackData);
                 updateProgressBar(Playback._currentPlaybackData.progress_ms, Playback._currentPlaybackData.item.duration_ms); 
 
@@ -355,19 +467,47 @@ function updatePlaybackStateBar(playbackState, previousPlaybackState) {
     let shuffleBtn = document.getElementById('shuffleBtn');
     if (shuffleBtn) {
         if (playbackState.actions.disallows?.toggling_shuffle) {
+            shuffleBtn.classList.add("btn-outline-success");
+            shuffleBtn.classList.remove("btn-success");
             shuffleBtn.setAttribute("disabled", "");
         } else {
             shuffleBtn.removeAttribute("disabled");
+            if (Playback._shuffle_state) {
+                shuffleBtn.classList.remove("btn-outline-success");
+                shuffleBtn.classList.add("btn-success");
+                shuffleBtn.classList.add("active");
+            } else {
+                shuffleBtn.classList.add("btn-outline-success");
+                shuffleBtn.classList.remove("btn-success");
+                shuffleBtn.classList.remove("active");
+            }
         }
     }
 
     // Repeat button
     let repeatBtn = document.getElementById('repeatBtn');
     if (repeatBtn) {
+        let icon_element = repeatBtn.getElementsByTagName('i')[0];
         if (playbackState.actions.disallows?.toggling_repeat_context && playbackState.actions.disallows?.toggle_repeat_track) {
             repeatBtn.setAttribute("disabled", "");
+            repeatBtn.className = "btn btn-outline-success";
+            icon_element.className = "bi bi-arrow-clockwise";
         } else {
-            repeatBtn.removeAttribute("disabled");
+            switch (Playback._repeat_state) {
+                case RepeatState[0]:
+                    repeatBtn.className = "btn btn-outline-success";
+                    icon_element.className = "bi bi-arrow-clockwise";
+                    break;
+                case RepeatState[1]:
+                    repeatBtn.className = "btn btn-success active";
+                    icon_element.className = "bi bi-arrow-clockwise";
+                    break;
+                case RepeatState[2]:
+                    repeatBtn.className = "btn btn-success active";
+                    icon_element.className = "bi bi-app-indicator";
+                default:
+                    break;
+            }
         }
     }
 }
@@ -453,5 +593,19 @@ function updateRemoteConnectState() {
         }
         // remoteConnectState_Element.classList.remove("d-flex");
         // remoteConnectState_Element.style.display = isPlayLocal ? "none" : "flex";
+    }
+}
+
+function updateVolumeState(volumeInit = null) {
+    let volumeSlider_Element = document.getElementById('volumeSlider');
+    if (volumeSlider_Element) {
+        let currentValue = volumeSlider_Element.value;
+        if (volumeInit) {
+            currentValue = volumeInit;
+            volumeSlider_Element.value = volumeInit;
+        }
+        // let value = volumeSlider_Element.value;
+        // volumeSlider_Element.value = Playback._currentVolume;
+        volumeSlider_Element.style.backgroundImage = `linear-gradient(to right, #198754 0%, #198754 ${currentValue}%, #e2e2e2 ${currentValue}%, #e2e2e2 100%)`;
     }
 }

@@ -124,13 +124,13 @@
       </div>
     </div>
     <footer class="footer py-3 px-5 d-flex justify-content-between align-items-center fixed-bottom" >
-      <div class="d-flex">
+      <div class="d-flex footer-left">
         <img id="coverPhoto" src="https://i.scdn.co/image/ab67616d0000b273fb0610caa5ce0747743fb52e" height="64px" width="64px">
         <div id="playingInfo" class="mx-2"></div>
         <!-- <span class="text-muted">Place sticky footer content here.</span> -->
       </div>
 
-      <div style="text-align: center;" >
+      <div class="footer-center" style="text-align: center;" >
         <div id="playback" mx-2>
           <button id="shuffleBtn" type="button" class="btn btn-outline-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem; --bs-btn-border-radius: 1rem;" onclick="shuffleAction()">
             <i class="bi bi-shuffle"></i>
@@ -191,11 +191,14 @@
         </div>
       </div>
 
-      <div>
-        <button id="playDevicesBtn" type="button" class="btn btn-outline-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+      <div class="footer-right">
+        <!-- <button id="playDevicesBtn" type="button" class="btn btn-outline-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
           <i class="bi bi-music-player"></i>
           <span class="visually-hidden">playOnLocal</span>
-        </button>
+        </button> -->
+        <div>
+          <input type="range" class="volume-slider" id="volumeSlider" style="background-image: linear-gradient(to right, #198754 0%, #198754 50%, #e2e2e2 50%, #e2e2e2 100%);" min="0" max="100" value="25" data-start="false" onmousedown="startAdjustVolume(this)" onmousemove="adjustVolume(this)" onmouseup="adjustVolumeDone(this)">
+        </div>
       </div>
     </footer>
   </main>

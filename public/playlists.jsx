@@ -131,9 +131,10 @@ function playlistPageContent(id) {
         return;
     }
 
+    playlists._requestConfig = Object.assign({}, globalRequestConfig);
     if (playlists._requestConfig) {
         playlists._requestConfig.headers["Content-Type"] = 'application/json';
-    }
+    } 
 
     fetch(`https://api.spotify.com/v1/playlists/${id}`, playlists._requestConfig)
     .then(response => {
