@@ -14,9 +14,9 @@ This is a web app which was created by Spotify Web API and Spotify Web Playback 
   * Pause
   * Skip to Next
   * Skip to Previous
-  * Shuffle (Coming...)
-  * Repeat Mode (Coming...)
-  * Volume Adjustment (Coming...)
+  * Shuffle
+  * Repeat Mode
+  * Volume Adjustment
   * Seek Position (Coming...)
 * Search
   * Tracks
