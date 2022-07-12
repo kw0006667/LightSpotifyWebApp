@@ -16,10 +16,26 @@ main {
   overflow-y: hidden;
 }
 
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  margin-left: 20px;
+  margin-right: 20px;
+  background-color: white;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  -webkit-filter: opacity(0.9);
+  filter:opacity(0.9);
+  z-index: 2;
+}
+
 footer {
   background-color: #ffffff;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   filter: opacity(0.9);
   -webkit-filter: opacity(0.9);
   border-color: darkgray;
@@ -233,4 +249,65 @@ th, td  {
   opacity: 1;
   background: white;
   transition: background .2s, opacity .2s;
+}
+
+.card-playlist {
+  width: 200px;
+  height: 300px;
+  cursor: pointer;
+  padding: 5px;
+  overflow: hidden;
+  background-color: white;
+  transition: background-color 0.3s ease-out;
+}
+.card-playlist:hover {
+  background-color: rgb(228, 228, 228);
+  transition: background-color 0.3s ease-in;
+}
+
+.card-title, .card-subtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-playlist-footer {
+  position: absolute;
+  width: 188px;
+  height: 300px;
+  bottom: -10px;
+  text-align: center;
+  opacity: 0;
+  backdrop-filter: blur(0px);
+  transition: opacity 0.1s, backdrop-filter 0.1s, bottom 0.3s ease-out;
+}
+.card-playlist-footer:hover {
+  bottom: 0px;
+  opacity: 1;
+  backdrop-filter: blur(4px);
+  transition: bottom 0.3s, backdrop-filter 0.1s, opacity 0.1s ease-in;
+}
+.card-playlist-footer-content {
+  bottom: 0;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  height: 75px;
+}
+
+.link-item {
+  position: relative;
+}
+
+.link-item.active::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 3px;
+  --bs-bg-opacity: 1;
+    background-color: rgba(var(--bs-success-rgb),var(--bs-bg-opacity))!important;
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  border-radius: 5px;
 }

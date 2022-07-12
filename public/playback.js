@@ -558,7 +558,7 @@ function updatePlayingInfo(track) {
 
         playingInfo_Element.innerHTML = 
         `
-        <header>${title}</header>
+        <div><span>${title}</span></div>
         <sub class="text-muted">${artist}</sub>
         `;
     }

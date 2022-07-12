@@ -43,7 +43,7 @@ function searchInput(event) {
     if (event.key === 'Enter' || event.keyCode === 13) {
         console.log(`SearchInput:\t${event.key}`);
         let requestConfig = Object.assign({}, globalRequestConfig);
-        let searchText = document.getElementById('searchInput')?.value;
+        let searchText = event.target.value;
 
         fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(searchText)}&type=album,track,artist,playlist`, requestConfig)
         .then(response => {
@@ -56,6 +56,7 @@ function searchInput(event) {
         })
         .then(data => {
             console.log(data);
+            resetSwitchTabsStatus();
             generateResultDOMElement(data);
         })
         .catch(reason => {
@@ -65,14 +66,14 @@ function searchInput(event) {
 }
 
 function generateResultDOMElement(result) {
-    let pageContentReactDom = document.getElementById('resultContent');
+    let pageContentReactDom = document.getElementById('content');
     if (result?.tracks?.items?.length > 0) {
         let trackList = result.tracks.items.map(track =>
             <TrackResultDOM key={track.id} track={track} />
             );
         
         ReactDOM.render(
-            <div className="list-group w-auto">
+            <div className="list-group w-auto py-3">
                 {trackList}
             </div>
             ,pageContentReactDom
