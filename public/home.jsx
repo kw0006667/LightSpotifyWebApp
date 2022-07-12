@@ -22,13 +22,13 @@ exports.fetchRecentlyPlayed = fetchRecentlyPlayed;
     });
     artistsStr = artistsStr.slice(0, artistsStr.length - 2);
     let playlist_uri = props.context?.uri;
-    
+
     return(
         <div className="card card-playlist m-2">
             <img src={imageUrl} className="card-img-top" alt="..." height="200px" width="200px" />
             <div className="card-body">
-                <h5 className="card-title">{track.name}</h5>
-                <h6 className="card-subtitle mb-2 text-muted">{artistsStr}</h6>
+                <h6 className="card-title">{track.name}</h6>
+                <span className="card-subtitle mb-2 text-muted">{artistsStr}</span>
             </div>
             <div className="card-playlist-footer" >
                 <div className="card-playlist-footer-content">

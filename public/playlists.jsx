@@ -110,8 +110,8 @@ function PlaylistCardDOM(props) {
         <div className="card card-playlist m-2">
             <img src={props.imageUri} className="card-img-top" alt="..."/>
             <div className="card-body">
-                <h5 className="card-title">{props.name}</h5>
-                <h6 className="card-subtitle mb-2 text-muted">{props.subtitle}</h6>
+                <h6 className="card-title">{props.name}</h6>
+                <span className="card-subtitle mb-2 text-muted">{props.subtitle}</span>
             </div>
             <div className="card-playlist-footer" >
                 <div className="card-playlist-footer-content">
