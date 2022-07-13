@@ -1,11 +1,11 @@
 // const { axios } = require("./axios.min");
 // require('./palylists');
 
-
 // import { fetchUserPlaylists } from "./playlists";
 
 var playerInstance = null;
 var globalRequestConfig = null;
+var userId = null;
 
 function init() {
     console.log('App initializing...');
@@ -54,8 +54,10 @@ function init() {
                 globalRequestConfig = Object.assign({}, requestConfig);
                 // initWebPlayback(access_token);
                 generateProfileDOMElements(data);
+                userId = data.id;
+                fetchRecentlyPlayed();
                 // getAvailableDevices(requestConfig);
-                initPlaylists(data.id, requestConfig);
+                // initPlaylists(data.id, requestConfig);
                 // initPlaybackStatus(data.id, requestConfig);
                 // checkIfSpotifyWebPlaybackSDKIsAvailable(access_token);
 
@@ -125,20 +127,78 @@ function checkIfSpotifyWebPlaybackSDKIsAvailable(token) {
 }
 
 function generateProfileDOMElements(data) {
-    let profileLinkElement = document.getElementById("profile-link");
-    let imageUrl = "";
-    let displayName = data.display_name;
+    // let profileLinkElement = document.getElementById("profile-link");
+    // let imageUrl = "";
+    // let displayName = data.display_name;
 
-    if (profileLinkElement) {
-        let mainImage = data.images[0];
+    // if (profileLinkElement) {
+    //     let mainImage = data.images[0];
+    //     if (mainImage) {
+    //         imageUrl = mainImage["url"];
+    //     }
+    //     profileLinkElement.innerHTML =
+    //     `
+    //     <img src="${imageUrl}" alt="" width="32" height="32" class="rounded-circle me-2">
+    //     <strong>${displayName}</strong>
+    //     `
+    // }
+    let profileIcon_Element = document.getElementById('userIcon');
+    if (profileIcon_Element) {
+        let mainImage = data?.images[0];
         if (mainImage) {
-            imageUrl = mainImage["url"];
+            profileIcon_Element.setAttribute('src', mainImage['url']);
         }
-        profileLinkElement.innerHTML =
-        `
-        <img src="${imageUrl}" alt="" width="32" height="32" class="rounded-circle me-2">
-        <strong>${displayName}</strong>
-        `
+    }
+}
+
+function switchToPlaylistTab(element) {
+    let targetIndex = element.getAttribute('data-index');
+    let headerTabsBar_Element = document.getElementById('headerTabsBar');
+    if (headerTabsBar_Element) {
+        let tabElements = [...headerTabsBar_Element.getElementsByTagName('a')];
+        tabElements.forEach(link => {
+            let index = link.getAttribute('data-index');
+            if (index === targetIndex) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        })
+        console.log(`Tab switched:${targetIndex}`);
+    }
+    switch (targetIndex) {
+        case '0':
+            fetchRecentlyPlayed();
+            break;
+        case '1':
+            if (playlists._playlistsDOM) {
+                renderPlaylistsDOM();
+            } else {
+                initPlaylists(userId, globalRequestConfig);
+            }
+            break;
+        case '2':
+            fetchSavedAlbums();
+            break;
+        case '3':
+            fetchSavedPodcasts();
+            break;
+        case '4':
+            fetchFollowedArtists();
+            break;
+        default:
+            break;
+    }
+}
+
+function resetSwitchTabsStatus() {
+    let headerTabsBar_Element = document.getElementById('headerTabsBar');
+    if (headerTabsBar_Element) {
+        let tabElements = [...headerTabsBar_Element.getElementsByTagName('a')];
+        tabElements.forEach(link => {
+            link.classList.remove('active');
+        })
+        // console.log(`Tab switched:${targetIndex}`);
     }
 }
 

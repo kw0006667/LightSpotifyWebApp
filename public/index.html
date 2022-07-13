@@ -21,95 +21,42 @@
 
 <body>
   <main class="d-flex flex-nowrap">
-    <!-- Sidebar -->
-    <div class="flex-shrink-0 p-3 bg-white scrollarea" style="width: 280px;">
-      <a href="/" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
-        <svg class="bi pe-none me-2" width="30" height="24">
-          <use xlink:href="#bootstrap"></use>
-        </svg>
-        <span class="fs-5 fw-semibold">Spotify</span>
-      </a>
-      <ul class="list-unstyled ps-0">
-        <li class="mb-1">
-          <!-- <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed"
-            data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="true">
-            Home
-          </button> -->
-          <div class="collapse show" id="home-collapse">
-            <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Overview</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Updates</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Reports</a></li>
-            </ul>
-          </div>
+    <!-- header -->
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-23 mb-4 border-bottom" >
+      <a href="/" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none">Spotify</a>
+      <ul id="headerTabsBar" class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+        <li>
+          <a href="#" class="nav-link px-2 link-secondary link-item active" data-index="0" onclick="switchToPlaylistTab(this)">Home</a>
         </li>
-        <li class="mb-1">
-          <!-- <button class="btn btn-outline-success d-inline-flex align-items-center rounded border-0" onclick="openSearchPage()">
-            <i class="bi bi-search"></i>
-            Search
-          </button> -->
-          <div class="collapse show" id="home-collapse">
-            <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-              <li>
-                <a href="#" class="link-dark d-inline-flex text-decoration-none rounded" onclick="openSearchPage()"">
-                  <i class="bi bi-search"></i>Search</a>
-              </li>
-            </ul>
-          </div>
+        <li>
+          <a href="#" class="nav-link px-2 link-dark link-item " data-index="1" onclick="switchToPlaylistTab(this)">Playlist</a>
         </li>
-        <li class="mb-1">
-          <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed"
-            data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
-            Playlists
-          </button>
-          <div class="collapse" id="dashboard-collapse">
-            <ul id="playlists" class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded" onclick="playlistPageContent()">Overview</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Weekly</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Monthly</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Annually</a></li>
-            </ul>
-          </div>
+        <li>
+          <a href="#" class="nav-link px-2 link-dark link-item" data-index="2" onclick="switchToPlaylistTab(this)">Album</a>
         </li>
-        <li class="mb-1">
-          <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed"
-            data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="false">
-            Devices
-          </button>
-          <div class="collapse" id="orders-collapse">
-            <ul id="devices" class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">New</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Processed</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Shipped</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Returned</a></li>
-            </ul>
-          </div>
+        <li>
+          <a href="#" class="nav-link px-2 link-dark link-item" data-index="3" onclick="switchToPlaylistTab(this)">Podcast</a>
         </li>
-        <li class="border-top my-3"></li>
-        <li class="mb-1">
-          <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed"
-            data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
-            Account
-          </button>
-          <div class="collapse" id="account-collapse">
-            <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">New...</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Profile</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Settings</a></li>
-              <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Sign out</a></li>
-            </ul>
-          </div>
-        </li>
-        <li class="mb-1">
-          <a id="profile-link" href="#"
-            class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1"
-            data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-            <strong>mdo</strong>
-          </a>
+        <li>
+          <a href="#" class="nav-link px-2 link-dark link-item" data-index="4" onclick="switchToPlaylistTab(this)">Artist</a>
         </li>
       </ul>
-    </div>
+      <div class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3 link-item" role="search">
+        <input type="text" class="form-control" placeholder="Search..." aria-label="Search" onkeyup="searchInput(event)">
+      </div>
+      <div class="dropdown text-end">
+        <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+          <img id="userIcon" src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+        </a>
+        <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+          <li><a class="dropdown-item" href="#">New project...</a></li>
+          <li><a class="dropdown-item" href="#">Settings</a></li>
+          <li><a class="dropdown-item" href="#">Profile</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#">Sign out</a></li>
+        </ul>
+      </div>
+    </header>
 
     <!-- Container -->
     <div class="container-lg scrollarea maincontainer">
@@ -192,11 +139,10 @@
       </div>
 
       <div class="footer-right">
-        <!-- <button id="playDevicesBtn" type="button" class="btn btn-outline-success" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-          <i class="bi bi-music-player"></i>
-          <span class="visually-hidden">playOnLocal</span>
-        </button> -->
         <div>
+          <!-- <a href="#" class="d-inline-flex text-decoration-none rounded">
+            <i class="bi bi-volume-down"></i>
+          </a> -->
           <input type="range" class="volume-slider" id="volumeSlider" style="background-image: linear-gradient(to right, #198754 0%, #198754 50%, #e2e2e2 50%, #e2e2e2 100%);" min="0" max="100" value="25" data-start="false" onmousedown="startAdjustVolume(this)" onmousemove="adjustVolume(this)" onmouseup="adjustVolumeDone(this)">
         </div>
       </div>
@@ -222,12 +168,14 @@
   <!-- Spotify Web Player SDK -->
   <script src="https://sdk.scdn.co/spotify-player.js" type="module"></script>
 
+  <!-- Reactjs Components -->
+  <script src="./home.jsx" type="text/jsx"></script>
   <script src="./playlists.jsx" type="text/jsx"></script>
+  <script src="./album.jsx" type="text/jsx"></script>
+  <script src="./podcast.jsx" type="text/jsx"></script>
+  <script src="./artist.jsx" type="text/jsx"></script>
   <script src="./track.jsx" type="text/jsx"></script>
   <script src="./search.jsx" type="text/jsx"></script>
-
-  <!-- Bootstrap customized js -->
-  <script src="./sidebar.js"></script>
 
   <!-- Cookie js -->
   <script src="./cookie.js"></script>

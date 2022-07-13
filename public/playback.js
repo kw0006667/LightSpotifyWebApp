@@ -333,7 +333,7 @@ function startFetchingPlayback() {
     localRequestConfig.headers["Content-Type"] = 'application/json';
 
     setTimeout(() => {
-        fetch('https://api.spotify.com/v1/me/player', localRequestConfig)
+        fetch('https://api.spotify.com/v1/me/player?additional_types=track,episode', localRequestConfig)
         .then(response => {
             if (response.status == 200) {
                 return response.json();
@@ -554,12 +554,16 @@ function updatePlayingInfo(track) {
     let playingInfo_Element = document.getElementById('playingInfo');
     if (playingInfo_Element) {
         let title = track.name;
-        let artist = track.artists[0].name;
+        let artistsStr = '';
+        track.artists.forEach(artist => {
+            artistsStr += `${artist.name}, `;
+        });
+        artistsStr = artistsStr.slice(0, artistsStr.length - 2);
 
         playingInfo_Element.innerHTML = 
         `
-        <header>${title}</header>
-        <sub class="text-muted">${artist}</sub>
+        <div><span>${title}</span></div>
+        <sub class="text-muted">${artistsStr}</sub>
         `;
     }
 }

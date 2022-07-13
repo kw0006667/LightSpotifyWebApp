@@ -73,6 +73,19 @@ function updateCurrentPlayingDevice() {
 }
 
 function generateDevicesDOMElements(devices) {
+    let allDeviceList_Element = document.querySelector('#allDeviceList');
+    if (allDeviceList_Element && !document.onclick) {
+        document.onclick = (ev) => {
+            const isClosest = ev.target.closest('#allDeviceList');
+            const isOpenToggle = ev.target.closest('#remoteContectStateBtn');
+
+            if (!isClosest && !isOpenToggle && allDeviceList_Element.classList.contains('connect-device-list-container-visible')) {
+                allDeviceList_Element.classList.remove('connect-device-list-container-visible');
+                _isAllDeviceListOpened = !_isAllDeviceListOpened;
+            }
+        };
+    }
+
     if (devices?.length > 0) {
         let devices_element = document.getElementById('devices');
         if (devices_element) {
@@ -129,8 +142,6 @@ function openAllDevicesList() {
     }
 
     if (_isAllDeviceListOpened) {
-        allDeviceList_Element.classList.remove('connect-device-list-container-visible');    
-    } else {
         allDeviceList_Element.classList.add('connect-device-list-container-visible');
     }
 

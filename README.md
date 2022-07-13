@@ -1,7 +1,7 @@
 # Light Spotify Web App
 
 ## Snapshots
-![snapshot](./readme/Screen%20Shot%202022-07-08%20at%202.05.01%20AM.png)
+![snapshot](./readme/Screen%20Shot%202022-07-13%20at%2012.04.50%20AM.png)
 
 ## Description
 This is a web app which was created by Spotify Web API and Spotify Web Playback SDK. Since the official Spotify app has only dark theme. I would like to create a light theme web app.:)
@@ -31,7 +31,7 @@ This is a web app which was created by Spotify Web API and Spotify Web Playback 
   * Create a new playlist (Coming...)
   * Shuffle play the playlist (Coming...)
 * Album
-  * Show the existing albums (Coming...)
+  * Show the existing albums
   * Like/save albums (Coming...)
 * Artist
   * Navigate to the artist page (Coming...)

@@ -17,10 +17,12 @@ let playlists = {
     _content_Element: null,
     _requestConfig: null,
     _userId: null,
-
+    _playlistsDOM: null
 };
 
-function fetchUserPlaylists(userId, requestConfig, nextPlaylistsUrl = null) {
+function fetchUserPlaylists(userId, nextPlaylistsUrl = null) {
+
+    let requestConfig = Object.assign({}, globalRequestConfig);
     if (!requestConfig) {
         return;
     }
@@ -103,26 +105,63 @@ function PlaylistsDOM(props) {
     );
 }
 
-function generatePlaylistsDOMElements(playlists) {
-    if (playlists?.length > 0) {
-        let playlists_element = document.getElementById('dashboard-collapse');
-        if (playlists_element) {
-            ReactDOM.render(
-                <PlaylistsDOM playlists={playlists}/>
-                , playlists_element
-            )
-        }
+function PlaylistCardDOM(props) {
+    return(
+        <div className="card card-playlist m-2">
+            <img src={props.imageUri} className="card-img-top" alt="..."/>
+            <div className="card-body">
+                <h6 className="card-title">{props.name}</h6>
+                <span className="card-subtitle mb-2 text-muted">{props.subtitle}</span>
+            </div>
+            <div className="card-playlist-footer" >
+                <div className="card-playlist-footer-content">
+                    <button className="btn btn-success" width="48px" height="48px" onClick={() => playEntirePlaylist(props.playlistUri)}>
+                        <i className="bi bi-play"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function generatePlaylistsDOMElements(playlistsData) {
+    if (playlistsData?.length > 0) {
+        playlists._playlistsDOM = playlistsData.map(playlist => 
+            <PlaylistCardDOM key={playlist.id} 
+                            name={playlist.name} 
+                            subtitle={playlist.description ? playlist.description : 'By ' + playlist.owner?.display_name} 
+                            imageUri={playlist.images[0]?.url}
+                            playlistUri={playlist.uri} 
+                            playlist={playlist} />
+            );
+
+        renderPlaylistsDOM();
+    }
+}
+
+function renderPlaylistsDOM() {
+    let content_Element = document.getElementById('content');
+    if (content_Element) {
+        ReactDOM.unmountComponentAtNode(content_Element);
+
+        ReactDOM.render(
+            <div className="d-flex flex-wrap mt-4">
+                {playlists._playlistsDOM}
+            </div>
+            , content_Element
+        );
     }
 }
 
 function initPlaylists(userId, requestConfig) {
     playlists._playlists_Element = document.getElementById('playlists');
     playlists._content_Element = document.getElementById('content');
-    if (playlists._playlists_Element) {
-        playlists._playlists_Element.innerHTML = "";
+    if (playlists._content_Element) {
         playlists._requestConfig = requestConfig;
         playlists._userId = userId;
-        fetchUserPlaylists(userId, requestConfig);
+        if (playlists._playlistCollection.length === 0) {
+            fetchUserPlaylists(userId);
+        }
     }
 }
 
@@ -150,6 +189,36 @@ function playlistPageContent(id) {
     })
     .catch(reason => {
         console.error(`playlistPageContent:\n${reason}`);
+    });
+}
+
+function playEntirePlaylist(playlistUri) {
+    let reqConfig = Object.assign({}, globalRequestConfig);
+    reqConfig.headers["Content-Type"] = 'application/json';
+    let playlistData = {
+        context_uri: playlistUri
+    };
+    reqConfig.body = JSON.stringify(playlistData);
+    reqConfig.method = 'PUT';
+
+    let currentPlayingDeviceId = '';
+    if (Devices.currentDeviceId) {
+        currentPlayingDeviceId = Devices.currentDeviceId;
+    } else {
+        currentPlayingDeviceId = Playback._deviceId;
+    }
+
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${currentPlayingDeviceId}`, reqConfig)
+    .then(response => {
+        if (response.status == 204) {
+            // return response.json();
+            console.log(`startFetchingPlayback:\t${response}`);
+        } else if (response.status === 401) {
+            refreshToken();
+        }
+    })
+    .catch(reason => {
+        console.error(`play track:\n${reason}`);
     });
 }
 
@@ -210,7 +279,7 @@ function TrackDOMV2(props) {
             <td className="d-flex">
                 <img src={props.track.album.images[0].url} alt="twbs" width="32" height="32" className="flex-shrink-0"></img>
                 <div className="ms-1 me-auto">
-                    <header >{props.track.name}</header>
+                    <div><span >{props.track.name}</span></div>
                     <span className="text-muted">{props.track.artists[0].name}</span>
                 </div>
             </td>
