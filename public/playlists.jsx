@@ -85,29 +85,29 @@ function fetchUserPlaylists(userId, nextPlaylistsUrl = null) {
     });
 }
 
-function PlaylistDOM(props) {
-    return(
-        <li>
-            <a href="#" className="link-dark d-inline-flex text-decoration-none rounded" onClick={() => playlistPageContent(props.playlist.id)}>{props.playlist.name}</a>
-        </li>
-    )
-}
+// function PlaylistDOM(props) {
+//     return(
+//         <li>
+//             <a href="#" className="link-dark d-inline-flex text-decoration-none rounded" onClick={() => playlistPageContent(props.playlist.id)}>{props.playlist.name}</a>
+//         </li>
+//     )
+// }
 
-function PlaylistsDOM(props) {
-    const playlists = props.playlists.map( playlist =>
-        <PlaylistDOM key={playlist.id} playlist={playlist} />
-        );
+// function PlaylistsDOM(props) {
+//     const playlists = props.playlists.map( playlist =>
+//         <PlaylistDOM key={playlist.id} playlist={playlist} />
+//         );
     
-    return(
-        <ul className="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-            {playlists}
-        </ul>
-    );
-}
+//     return(
+//         <ul className="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+//             {playlists}
+//         </ul>
+//     );
+// }
 
 function PlaylistCardDOM(props) {
     return(
-        <div className="card card-playlist m-2">
+        <div className="card card-playlist m-2" onClick={() => fetchPlaylistTracks(props.playlist.id)}>
             <img src={props.imageUri} className="card-img-top" alt="..."/>
             <div className="card-body">
                 <h6 className="card-title">{props.name}</h6>
@@ -153,6 +153,106 @@ function renderPlaylistsDOM() {
     }
 }
 
+function PlaylistDetailDOM(props) {
+    let artistsStr = '';
+    props.track.artists.forEach(artist => {
+        artistsStr += `${artist.name}, `;
+    });
+    artistsStr = artistsStr.slice(0, artistsStr.length - 2);
+
+    return(
+        <tr className="album-table-row" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track.uri)}>
+            <th scope="row">{props.trackId}</th>
+            <td>{props.track.name}</td>
+            <td>{artistsStr}</td>
+            <td>{props.track.album.name}</td>
+            <td>{new Date(props.track.duration_ms).toISOString().slice(14,19)}</td>
+            <td>{'...'}</td>
+        </tr>
+    );
+}
+
+function generatePlaylistDetailPageContent(playlist) {
+    let trackId = 0;
+    let tracks = playlist.tracks.items.map(track => {
+            trackId++;
+            return <PlaylistDetailDOM key={trackId} playlistUri={playlist.uri} trackId={trackId} track={track.track} />
+    });
+    let content_Element = document.getElementById('content');
+    if (content_Element) {
+        ReactDOM.render(
+            <div style={{marginTop: '10px'}}>
+                <section>
+                    <div className="d-flex align-items-baseline">
+                        <div>
+                            <img className="album-image" src={playlist.images[0]?.url}/>
+                        </div>
+                        <div className="album-title">
+                            <div className="album-name">
+                                {playlist.name}
+                            </div>
+                            <div className="album-artist">
+                                {playlist.owner.display_name}
+                            </div>
+                            <div className="album-date text-muted">
+                                {playlist.description}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <table className="table table-hover align-middle album-table">
+                        <colgroup>
+                            <col span={1} style={{width:'5%'}}/>
+                            <col span={1} style={{width:'20%'}}/>
+                            <col span={1} style={{width:'30%'}}/>
+                            <col span={1} style={{width:'30%'}}/>
+                            <col span={1} style={{width:'10%'}}/>
+                            <col span={1} style={{width:'5%'}}/>
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" style={{width:'5%'}}>#</th>
+                                <th >Title</th>
+                                <th >Artist</th>
+                                <th >Album</th>
+                                <th >Time</th>
+                                <th ></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {tracks}
+                        </tbody>
+                    </table>
+                </section>
+                
+            </div>
+            , content_Element
+        )
+    }
+}
+
+function fetchPlaylistTracks(playlist_id) {
+    let requestConfig = Object.assign({}, globalRequestConfig);
+    requestConfig.headers["Content-Type"] = 'application/json';
+    requestConfig.method = 'GET';
+
+    fetch(`https://api.spotify.com/v1/playlists/${playlist_id}?additional_types=track,episode`, requestConfig)
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else if (response.status === 401) {
+            refreshToken();
+        }
+    })
+    .then(data => {
+        generatePlaylistDetailPageContent(data);
+    })
+    .catch(reason => {
+        console.log(`fetchAlbumTracks:\n${reason}`);
+    });
+}
+
 function initPlaylists(userId, requestConfig) {
     playlists._playlists_Element = document.getElementById('playlists');
     playlists._content_Element = document.getElementById('content');
@@ -165,32 +265,32 @@ function initPlaylists(userId, requestConfig) {
     }
 }
 
-function playlistPageContent(id) {
-    if (!id) {
-        return;
-    }
+// function playlistPageContent(id) {
+//     if (!id) {
+//         return;
+//     }
 
-    playlists._requestConfig = Object.assign({}, globalRequestConfig);
-    if (playlists._requestConfig) {
-        playlists._requestConfig.headers["Content-Type"] = 'application/json';
-    } 
+//     playlists._requestConfig = Object.assign({}, globalRequestConfig);
+//     if (playlists._requestConfig) {
+//         playlists._requestConfig.headers["Content-Type"] = 'application/json';
+//     } 
 
-    fetch(`https://api.spotify.com/v1/playlists/${id}`, playlists._requestConfig)
-    .then(response => {
-        if (response.status === 200) {
-            return response.json();
-        } else if (response.status === 401) {
-            refreshToken();
-            return;
-        }       
-    })
-    .then(data => {
-        playlistPageContentLoad(data);
-    })
-    .catch(reason => {
-        console.error(`playlistPageContent:\n${reason}`);
-    });
-}
+//     fetch(`https://api.spotify.com/v1/playlists/${id}`, playlists._requestConfig)
+//     .then(response => {
+//         if (response.status === 200) {
+//             return response.json();
+//         } else if (response.status === 401) {
+//             refreshToken();
+//             return;
+//         }       
+//     })
+//     .then(data => {
+//         playlistPageContentLoad(data);
+//     })
+//     .catch(reason => {
+//         console.error(`playlistPageContent:\n${reason}`);
+//     });
+// }
 
 function playEntirePlaylist(playlistUri) {
     let reqConfig = Object.assign({}, globalRequestConfig);
@@ -223,19 +323,15 @@ function playEntirePlaylist(playlistUri) {
 }
 
 function playTrackInPlaylist(playlistUri, trackUri) {
-    let reqConfig = Object.assign({}, playlists._requestConfig);
+    let reqConfig = Object.assign({}, globalRequestConfig);
     let trackData = {
         context_uri: playlistUri,
-        // uris: [track.uri],
         offset:  {
             uri: trackUri
         },
         position_ms: 0
     };
-    // reqConfig.body = data;
     reqConfig.body = JSON.stringify(trackData);
-    // reqConfig.body["context_uri"] = track.uri;
-    // reqConfig.body["position_ms"] = 0;
     reqConfig.method = "PUT";
 
     let currentPlayingDeviceId = '';
@@ -248,8 +344,9 @@ function playTrackInPlaylist(playlistUri, trackUri) {
     fetch(`https://api.spotify.com/v1/me/player/play?device_id=${currentPlayingDeviceId}`, reqConfig)
     .then(response => {
         if (response.status == 204) {
-            // return response.json();
             console.log(`startFetchingPlayback:\t${response}`);
+        } else if (response.status === 401) {
+            refreshToken();
         }
     })
     .catch(reason => {
@@ -257,197 +354,197 @@ function playTrackInPlaylist(playlistUri, trackUri) {
     });
 }
 
-function TrackDOM(props) {
-    return(
-        <li className="list-group-item d-flex justify-content-between align-items-start">
-            <div className="ms-2 me-auto" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track.uri)}>
-                <div className="fw-bold">{props.track.name}</div>
-                {props.track.artists[0].name}
-            </div>
-        </li>
-    );
-}
+// function TrackDOM(props) {
+//     return(
+//         <li className="list-group-item d-flex justify-content-between align-items-start">
+//             <div className="ms-2 me-auto" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track.uri)}>
+//                 <div className="fw-bold">{props.track.name}</div>
+//                 {props.track.artists[0].name}
+//             </div>
+//         </li>
+//     );
+// }
 
-function ArtistsDOM(artists) {
+// function ArtistsDOM(artists) {
     
-}
+// }
 
-function TrackDOMV2(props) {
-    return(
-        <tr className="align-items-center" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track.uri)}>
-            <th scope="row">{props.index}</th>
-            <td className="d-flex">
-                <img src={props.track.album.images[0].url} alt="twbs" width="32" height="32" className="flex-shrink-0"></img>
-                <div className="ms-1 me-auto">
-                    <div><span >{props.track.name}</span></div>
-                    <span className="text-muted">{props.track.artists[0].name}</span>
-                </div>
-            </td>
-            <td>
-                <span className="text-muted">{props.track.album.name}</span>
-            </td>
-            <td>
-                <span className="text-muted">
-                    {new Date(props.track.duration_ms).toISOString().slice(14,19)}
-                </span>
-            </td>
-        </tr>
-    );
-}
+// function TrackDOMV2(props) {
+//     return(
+//         <tr className="align-items-center" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track.uri)}>
+//             <th scope="row">{props.index}</th>
+//             <td className="d-flex">
+//                 <img src={props.track.album.images[0].url} alt="twbs" width="32" height="32" className="flex-shrink-0"></img>
+//                 <div className="ms-1 me-auto">
+//                     <div><span >{props.track.name}</span></div>
+//                     <span className="text-muted">{props.track.artists[0].name}</span>
+//                 </div>
+//             </td>
+//             <td>
+//                 <span className="text-muted">{props.track.album.name}</span>
+//             </td>
+//             <td>
+//                 <span className="text-muted">
+//                     {new Date(props.track.duration_ms).toISOString().slice(14,19)}
+//                 </span>
+//             </td>
+//         </tr>
+//     );
+// }
 
-function TracksDOM(props) {
-    const tracks = props.tracks.map(track => 
-        <TrackDOM key={track.track.id} playlistUri={props.playlistUri} track={track.track}/>
-    );
+// function TracksDOM(props) {
+//     const tracks = props.tracks.map(track => 
+//         <TrackDOM key={track.track.id} playlistUri={props.playlistUri} track={track.track}/>
+//     );
 
-    return(
-        <ol id="playlists_collection" className="list-group list-group-numbered">
-            {tracks}
-        </ol>
-    );
-}
+//     return(
+//         <ol id="playlists_collection" className="list-group list-group-numbered">
+//             {tracks}
+//         </ol>
+//     );
+// }
 
-function playlistPageContentLoad(data) {
-    if (!data) {
-        return;
-    }
+// function playlistPageContentLoad(data) {
+//     if (!data) {
+//         return;
+//     }
 
-    let pageContentReactDom = document.getElementById('content');
-    if (pageContentReactDom) {
+//     let pageContentReactDom = document.getElementById('content');
+//     if (pageContentReactDom) {
 
-        const tracks = data.tracks.items.map( (item, index) => 
-            <TrackDOMV2 index={index + 1} key={item.track.id} playlistUri={data.uri} track={item.track} />
-        );
+//         const tracks = data.tracks.items.map( (item, index) => 
+//             <TrackDOMV2 index={index + 1} key={item.track.id} playlistUri={data.uri} track={item.track} />
+//         );
         
-        ReactDOM.render(
-            <div>
-                <img src={data.images[0].url} width="128" height="128" />
-                <h1>{data.name}</h1>
-                <h4>{data.description}</h4>
-                <hr/>
-                <table className="table align-middle table-hover table-sm">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Title</th>
-                            <th scope="col">Album</th>
-                            <th scope="col">Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tracks}
-                    </tbody>
-                </table>
-                {/* <TracksDOM playlistUri={data.uri} tracks={data.tracks.items}/> */}
-            </div>
-        , pageContentReactDom
-        );
-    }
+//         ReactDOM.render(
+//             <div>
+//                 <img src={data.images[0].url} width="128" height="128" />
+//                 <h1>{data.name}</h1>
+//                 <h4>{data.description}</h4>
+//                 <hr/>
+//                 <table className="table align-middle table-hover table-sm">
+//                     <thead>
+//                         <tr>
+//                             <th scope="col">#</th>
+//                             <th scope="col">Title</th>
+//                             <th scope="col">Album</th>
+//                             <th scope="col">Duration</th>
+//                         </tr>
+//                     </thead>
+//                     <tbody>
+//                         {tracks}
+//                     </tbody>
+//                 </table>
+//                 {/* <TracksDOM playlistUri={data.uri} tracks={data.tracks.items}/> */}
+//             </div>
+//         , pageContentReactDom
+//         );
+//     }
 
     
 
-    let playlistContainerElement = document.getElementById('playlistContainer');
-    if (playlistContainerElement) {
-        // playlistContainerElement.innerHTML = 
-        // `
-        // <div>
-        //     <img src="${data.images[0].url}" width="128" height="128" >
-        //     <h1>${data.name}</h1>
-        //     <h4>${data.description}</h4>
-        //     <hr/>
-        //     <ol id="playlists_collection" class="list-group list-group-numbered">
-        //     </ol>
-        //   </div>
-        // `;
-        // let ol = ReactDOM.createRoot(document.getElementById('playlists_collection'));
-        let playTrack = () => {
-            console.log('Play track: clicked');
-            let reqConfig = Object.assign({}, playlists._requestConfig);
-            let trackData = {
-                context_uri: data.uri,
-                // uris: [track.uri],
-                offset:  {
-                    uri: item.track.uri
-                },
-                position_ms: 0
-                };
-            // reqConfig.body = data;
-            reqConfig.body = JSON.stringify(trackData);
-            // reqConfig.body["context_uri"] = track.uri;
-            // reqConfig.body["position_ms"] = 0;
-            reqConfig.method = "PUT";
+//     let playlistContainerElement = document.getElementById('playlistContainer');
+//     if (playlistContainerElement) {
+//         // playlistContainerElement.innerHTML = 
+//         // `
+//         // <div>
+//         //     <img src="${data.images[0].url}" width="128" height="128" >
+//         //     <h1>${data.name}</h1>
+//         //     <h4>${data.description}</h4>
+//         //     <hr/>
+//         //     <ol id="playlists_collection" class="list-group list-group-numbered">
+//         //     </ol>
+//         //   </div>
+//         // `;
+//         // let ol = ReactDOM.createRoot(document.getElementById('playlists_collection'));
+//         let playTrack = () => {
+//             console.log('Play track: clicked');
+//             let reqConfig = Object.assign({}, playlists._requestConfig);
+//             let trackData = {
+//                 context_uri: data.uri,
+//                 // uris: [track.uri],
+//                 offset:  {
+//                     uri: item.track.uri
+//                 },
+//                 position_ms: 0
+//                 };
+//             // reqConfig.body = data;
+//             reqConfig.body = JSON.stringify(trackData);
+//             // reqConfig.body["context_uri"] = track.uri;
+//             // reqConfig.body["position_ms"] = 0;
+//             reqConfig.method = "PUT";
 
-            fetch('https://api.spotify.com/v1/me/player/play?device_id=b9c5bdb3f1d1a676d17ba46a060e18aa6faa4eb0', reqConfig)
-            .then(response => {
-                if (response.status == 204) {
-                    // return response.json();
-                    console.log(`startFetchingPlayback:\t${response}`);
-                }
-            })
-            .catch(reason => {
-                console.error(`play track:\n${reason}`);
-            });
-        };
-        const tracks = data.tracks.items.map( item => {
-            <li className="list-group-item d-flex justify-content-between align-items-start">
-                <div className="ms-2 me-auto" ondblclick={playTrack}>
-                    <div class="fw-bold">{item.track.name}</div>
-                    {item.track.artists[0].name}
-                </div>
-            </li>
-        });
-        // if (ol) {
-        //     ol.render(tracks);
-        // }
+//             fetch('https://api.spotify.com/v1/me/player/play?device_id=b9c5bdb3f1d1a676d17ba46a060e18aa6faa4eb0', reqConfig)
+//             .then(response => {
+//                 if (response.status == 204) {
+//                     // return response.json();
+//                     console.log(`startFetchingPlayback:\t${response}`);
+//                 }
+//             })
+//             .catch(reason => {
+//                 console.error(`play track:\n${reason}`);
+//             });
+//         };
+//         const tracks = data.tracks.items.map( item => {
+//             <li className="list-group-item d-flex justify-content-between align-items-start">
+//                 <div className="ms-2 me-auto" ondblclick={playTrack}>
+//                     <div class="fw-bold">{item.track.name}</div>
+//                     {item.track.artists[0].name}
+//                 </div>
+//             </li>
+//         });
+//         // if (ol) {
+//         //     ol.render(tracks);
+//         // }
 
-        // data.tracks.items.forEach(item => {
-        //     let track = item.track;
-        //     let dblclickDOM = document.createElement('div');
-        //     dblclickDOM.className = "ms-2 me-auto";
-        //     // dblclickDOM.addEventListener("click")
-        //     dblclickDOM.ondblclick = (ev) => {
-        //         console.log('Play track: clicked');
-        //         let reqConfig = Object.assign({}, playlists._requestConfig);
-        //         let trackData = {
-        //             context_uri: data.uri,
-        //             // uris: [track.uri],
-        //             offset:  {
-        //                 uri: track.uri
-        //             },
-        //             position_ms: 0
-        //           };
-        //         // reqConfig.body = data;
-        //         reqConfig.body = JSON.stringify(trackData);
-        //         // reqConfig.body["context_uri"] = track.uri;
-        //         // reqConfig.body["position_ms"] = 0;
-        //         reqConfig.method = "PUT";
+//         // data.tracks.items.forEach(item => {
+//         //     let track = item.track;
+//         //     let dblclickDOM = document.createElement('div');
+//         //     dblclickDOM.className = "ms-2 me-auto";
+//         //     // dblclickDOM.addEventListener("click")
+//         //     dblclickDOM.ondblclick = (ev) => {
+//         //         console.log('Play track: clicked');
+//         //         let reqConfig = Object.assign({}, playlists._requestConfig);
+//         //         let trackData = {
+//         //             context_uri: data.uri,
+//         //             // uris: [track.uri],
+//         //             offset:  {
+//         //                 uri: track.uri
+//         //             },
+//         //             position_ms: 0
+//         //           };
+//         //         // reqConfig.body = data;
+//         //         reqConfig.body = JSON.stringify(trackData);
+//         //         // reqConfig.body["context_uri"] = track.uri;
+//         //         // reqConfig.body["position_ms"] = 0;
+//         //         reqConfig.method = "PUT";
 
-        //         fetch('https://api.spotify.com/v1/me/player/play?device_id=b9c5bdb3f1d1a676d17ba46a060e18aa6faa4eb0', reqConfig)
-        //         .then(response => {
-        //             if (response.status == 204) {
-        //                 // return response.json();
-        //                 console.log(`startFetchingPlayback:\t${response}`);
-        //             }
-        //         })
-        //         .catch(reason => {
-        //             console.error(`play track:\n${reason}`);
-        //         });
-        //     };
-        //     dblclickDOM.innerHTML =
-        //     `
-        //     <div class="fw-bold">${track.name}</div>
-        //     ${track.artists[0].name}
-        //     `;
+//         //         fetch('https://api.spotify.com/v1/me/player/play?device_id=b9c5bdb3f1d1a676d17ba46a060e18aa6faa4eb0', reqConfig)
+//         //         .then(response => {
+//         //             if (response.status == 204) {
+//         //                 // return response.json();
+//         //                 console.log(`startFetchingPlayback:\t${response}`);
+//         //             }
+//         //         })
+//         //         .catch(reason => {
+//         //             console.error(`play track:\n${reason}`);
+//         //         });
+//         //     };
+//         //     dblclickDOM.innerHTML =
+//         //     `
+//         //     <div class="fw-bold">${track.name}</div>
+//         //     ${track.artists[0].name}
+//         //     `;
 
-        //     let li = document.createElement('li');
-        //     li.className = "list-group-item d-flex justify-content-between align-items-start";
-        //     // li.innerHTML =
-        //     // `
-        //     // <span class="badge bg-primary rounded-pill">${new Date(track.duration_ms).toISOString().slice(11,19)}</span>
-        //     // `;
-        //     li.appendChild(dblclickDOM);
+//         //     let li = document.createElement('li');
+//         //     li.className = "list-group-item d-flex justify-content-between align-items-start";
+//         //     // li.innerHTML =
+//         //     // `
+//         //     // <span class="badge bg-primary rounded-pill">${new Date(track.duration_ms).toISOString().slice(11,19)}</span>
+//         //     // `;
+//         //     li.appendChild(dblclickDOM);
             
-        //     ol.appendChild(li);
-        // });
-    }
-}
+//         //     ol.appendChild(li);
+//         // });
+//     }
+// }

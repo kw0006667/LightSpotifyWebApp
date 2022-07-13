@@ -1,0 +1,62 @@
+.album-table-row {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: 14px;
+    color:rgb(123, 123, 123);
+}
+.album-table-row td {
+    /* white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; */
+    /* max-width: 25%; */
+}
+
+.album-table {
+    margin: 10px;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.album-image {
+    margin: 5px;
+    width: 256px;
+    height: 256px;
+    box-shadow: 0.3em 0.3em 1em rgba(0,0,0,0.3);
+}
+
+.album-title {
+    margin-left: 30px;
+    font-weight: bold;
+}
+
+.album-name {
+    font-size: 30px;
+}
+
+.album-artist {
+    padding-top: 2px;
+    font-size: 24px;
+    color: green;
+}
+
+.album-date {
+    font-size: 12px;
+}
+
+.podcast-table-releasedate {
+    font-size: 12px;
+}
+
+.podcast-table-name {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.podcast-table-des {
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* number of lines to show */
+    -webkit-box-orient: vertical;
+}
