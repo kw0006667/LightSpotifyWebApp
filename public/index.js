@@ -177,6 +177,15 @@ function switchToPlaylistTab(element) {
                 initPlaylists(userId, globalRequestConfig);
             }
             break;
+        case '2':
+            fetchSavedAlbums();
+            break;
+        case '3':
+            fetchSavedPodcasts();
+            break;
+        case '4':
+            fetchFollowedArtists();
+            break;
         default:
             break;
     }

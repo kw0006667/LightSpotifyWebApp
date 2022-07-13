@@ -42,11 +42,12 @@ exports.fetchRecentlyPlayed = fetchRecentlyPlayed;
 }
 
 function generateHomePageContent(recentlyPlayedTracks) {
-    let tracks = recentlyPlayedTracks.items.map(item => 
-            <RecentlyPlayedCardDOM key={item.track.id} 
+    let tracks = recentlyPlayedTracks.items.filter( (v, i, a) => a.findIndex(v2 => (v2.track.id === v.track.id)) === i).map(item => 
+        <RecentlyPlayedCardDOM key={item.track.id} 
                                     track={item.track} 
                                     context={item.context} />
         );
+    // arr.filter((v,i,a)=>a.findIndex(v2=>(v2.id===v.id))===i)
     let content_Element = document.getElementById('content');
     if (content_Element) {
         ReactDOM.render(
