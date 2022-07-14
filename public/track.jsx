@@ -21,12 +21,36 @@
     );
 }
 
-// <li className="list-group-item d-flex justify-content-between align-items-start">
-        //     <div className="ms-2 me-auto d-flex" onDoubleClick={() => playTrackInPlaylist(props.track.album.uri, props.track.uri)}>
-        //         <img src={props.track.album.images[0].url} width="64" height="64"></img>
-        //         <div className="mx-2">
-        //             <header>{props.track.name}</header>
-        //             <sub className="text-muted">{props.track.artists[0].name}</sub>
-        //         </div>                
-        //     </div>
-        // </li>
+function TrackLinkDOM(props) {
+    return(
+        <a href="#" className="spotify-link" onClick={(e) => fetchAlbumTracks(e, props.track.album.id)}>{props.track.name}</a>
+    );
+}
+
+function updatePlayingInfo(track) {
+    if (!track) {
+        return;
+    }
+
+    let playingInfo_Element = document.getElementById('playingInfo');
+    if (playingInfo_Element) {
+        let artists = track.artists.map(artist => {
+            return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
+        });
+        ReactDOM.render(
+            <div>
+                <div>
+                    <span>
+                        {<TrackLinkDOM track={track} /> }
+                    </span>
+                </div>
+                <div>
+                    <sub>
+                        {artists}
+                    </sub>
+                </div>
+            </div>
+            , playingInfo_Element
+        );
+    }
+}

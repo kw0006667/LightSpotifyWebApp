@@ -24,7 +24,7 @@ exports.fetchRecentlyPlayed = fetchRecentlyPlayed;
     let playlist_uri = props.context?.uri;
 
     return(
-        <div className="card card-playlist m-2">
+        <div className="card card-playlist m-2" onClick={(e) => fetchAlbumTracks(e, track.album.id)}>
             <img src={imageUrl} className="card-img-top" alt="..." height="200px" width="200px" />
             <div className="card-body">
                 <h6 className="card-title">{track.name}</h6>
@@ -32,7 +32,7 @@ exports.fetchRecentlyPlayed = fetchRecentlyPlayed;
             </div>
             <div className="card-playlist-footer" >
                 <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={() => playRecentlyPlayedTrack(track.uri, playlist_uri)}>
+                    <button className="btn btn-success" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, track.uri, playlist_uri)}>
                         <i className="bi bi-play"></i>
                     </button>
                 </div>
@@ -51,7 +51,7 @@ function generateHomePageContent(recentlyPlayedTracks) {
     let content_Element = document.getElementById('content');
     if (content_Element) {
         ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+            <div className="container" style={{marginTop: '10px'}}>
                 <section>
                     <h5>Recently played</h5>
                 </section>
@@ -88,7 +88,8 @@ function fetchRecentlyPlayed() {
     });
 }
 
-function playRecentlyPlayedTrack(track_uri, context_uri) {
+function playRecentlyPlayedTrack(event, track_uri, context_uri) {
+    event.stopPropagation();
     let reqConfig = Object.assign({}, globalRequestConfig);
     reqConfig.headers["Content-Type"] = 'application/json';
     let playData = {};

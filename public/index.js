@@ -6,6 +6,9 @@
 var playerInstance = null;
 var globalRequestConfig = null;
 var userId = null;
+var userProfile = {
+    country: null
+};
 
 function init() {
     console.log('App initializing...');
@@ -51,6 +54,9 @@ function init() {
                 if (loggedIn_status) {
                     loggedIn_status.hidden = false;
                 }
+
+                userProfile.country = data.country;
+
                 globalRequestConfig = Object.assign({}, requestConfig);
                 // initWebPlayback(access_token);
                 generateProfileDOMElements(data);

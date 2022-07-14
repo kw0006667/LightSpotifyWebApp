@@ -12,8 +12,7 @@ main {
   height: 100vh;
   /* height: -webkit-fill-available; */
   max-height: 100vh;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow-x: hidden;
 }
 
 header {
@@ -22,8 +21,6 @@ header {
   left: 0;
   right: 0;
   height: 50px;
-  margin-left: 20px;
-  margin-right: 20px;
   background-color: white;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
@@ -273,27 +270,38 @@ th, td  {
 
 .card-playlist-footer {
   position: absolute;
-  width: 188px;
-  height: 300px;
-  bottom: -10px;
+  width: 100%;
+  height: 100%;
   text-align: center;
   opacity: 0;
   backdrop-filter: blur(0px);
-  transition: opacity 0.1s, backdrop-filter 0.1s, bottom 0.3s ease-out;
+  transition: opacity 0.1s, backdrop-filter 0.1s ease-out;
 }
 .card-playlist-footer:hover {
-  bottom: 0px;
   opacity: 1;
   backdrop-filter: blur(4px);
-  transition: bottom 0.3s, backdrop-filter 0.1s, opacity 0.1s ease-in;
+  transition: backdrop-filter 0.1s, opacity 0.1s ease-in;
 }
-.card-playlist-footer-content {
+.card-playlist-footer div {
+  bottom: -10px;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  height: 75px;
+  transition: bottom 0.1s ease-out;
+}
+
+.card-playlist-footer:hover  div{
+  bottom: 0;
+  transition: bottom 0.1s ease-in;
+}
+/* .card-playlist-footer-content {
   bottom: 0;
   position: absolute;
   width: 100%;
   text-align: center;
   height: 75px;
-}
+} */
 
 .link-item {
   position: relative;

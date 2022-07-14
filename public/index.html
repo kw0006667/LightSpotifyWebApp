@@ -11,6 +11,7 @@
   <link href="./bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
   <link href="index.css" rel="stylesheet">
+  <link href="detail.css" rel="stylesheet">
   <style type="text/css">
     /* #login, #loggedin {
         display: none;
@@ -20,9 +21,9 @@
 </head>
 
 <body>
-  <main class="d-flex flex-nowrap">
+  <main>
     <!-- header -->
-    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-23 mb-4 border-bottom" >
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between px-3 mb-4 border-bottom" >
       <a href="/" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none">Spotify</a>
       <ul id="headerTabsBar" class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
         <li>
@@ -59,7 +60,7 @@
     </header>
 
     <!-- Container -->
-    <div class="container-lg scrollarea maincontainer">
+    <div class="scrollarea maincontainer">
       <div id="login">
         <h1>This is an example of the Authorization Code flow</h1>
         <a href="/login" class="btn btn-primary">Log in with Spotify</a>
@@ -156,6 +157,9 @@
   <!-- JavaScript Bundle with Popper -->
   <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script> -->
   <script src="./bootstrap.bundle.min.js"></script>
+
+  <!-- Color thief -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
 
   <!-- React Scripts -->
   <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
