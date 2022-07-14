@@ -34,7 +34,7 @@ This is a web app which was created by Spotify Web API and Spotify Web Playback 
   * Show the existing albums
   * Like/save albums (Coming...)
 * Artist
-  * Navigate to the artist page (Coming...)
+  * Navigate to the artist page
   * Like the artist to store (Coming...)
 * Standalone App (Coming...)
   * Electron or CEF?
