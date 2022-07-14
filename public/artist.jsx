@@ -126,12 +126,12 @@ function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, rela
                     </table>
                 </section>
                 <section className="container artist-section">
-                    <div className="artist-section-title d-flex">
+                    <div className="artist-section-title d-flex justify-content-between">
                         <div>
                             Albums
                         </div>
                         <div>
-                            <a href="#" className="spotify-link" onClick={(e) => fetchAllArtistAlbums(e, artist.id)}>See All</a>
+                            <a href="#" className="spotify-link spotify-link-thin spotify-link-small" onClick={(e) => fetchAllArtistAlbums(e, artist.id)}>See All</a>
                         </div>
                     </div>
                     <div className="d-flex flex-wrap">
@@ -160,7 +160,7 @@ function generateAllAlbumsPageContent(albums) {
     let content_Element = document.getElementById('content');
     if (content_Element) {
         ReactDOM.render(
-            <div className="container" style={{marginTop: '10px'}}>
+            <div className="container" style={{marginTop: '30px'}}>
                     {albumsArray}
             </div>
             , content_Element
