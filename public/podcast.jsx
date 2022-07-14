@@ -24,7 +24,7 @@ function PodcastCardDOM(props) {
             </div>
             <div className="card-playlist-footer" >
                 <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={() => playRecentlyPlayedTrack(null, podcast.show.uri)}>
+                    <button className="btn btn-success" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, null /* track_id */, podcast.show.uri)}>
                         <i className="bi bi-play"></i>
                     </button>
                 </div>
@@ -42,7 +42,7 @@ function generatePodcastPageContent(savedPodcasts) {
     let content_Element = document.getElementById('content');
     if (content_Element) {
         ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+            <div className="container" style={{marginTop: '10px'}}>
                     <div className="d-flex flex-wrap mt-4">
                         {podcasts}
                     </div>
@@ -54,7 +54,7 @@ function generatePodcastPageContent(savedPodcasts) {
 
 function PodcastDetailDOM(props) {
     return(
-        <tr className="album-table-row" onDoubleClick={() => playEpisodeInPodcast(props.albumUri, props.track.uri)}>
+        <tr className="album-table-row" onDoubleClick={() => playEpisodeInPodcast(props.podcastUri, props.episode.uri)}>
             <th scope="row">{props.trackId}</th>
             <td>
                 <div>
@@ -76,7 +76,7 @@ function generatePodcastDetailPageContent(podcast) {
     let content_Element = document.getElementById('content');
     if (content_Element) {
         ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+            <div className="container" style={{marginTop: '10px'}}>
                 <section>
                     <div className="d-flex align-items-baseline">
                         <div>

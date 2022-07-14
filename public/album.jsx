@@ -23,7 +23,7 @@ function AlbumCardDOM(props) {
     let album_uri = album.uri;
 
     return(
-        <div className="card card-playlist m-2" onClick={() => fetchAlbumTracks(album.id)}>
+        <div className="card card-playlist m-2" onClick={(e) => fetchAlbumTracks(e, album.id)}>
             <img src={imageUrl} className="card-img-top" alt="..." height="200px" width="200px" />
             <div className="card-body">
                 <h6 className="card-title">{album.name}</h6>
@@ -31,7 +31,7 @@ function AlbumCardDOM(props) {
             </div>
             <div className="card-playlist-footer" >
                 <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={() => playRecentlyPlayedTrack(null, album_uri)}>
+                    <button className="btn btn-success" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, null /* track_id */, album_uri)}>
                         <i className="bi bi-play"></i>
                     </button>
                 </div>
@@ -51,7 +51,7 @@ function generateAlbumPageContent(savedAlbums) {
     let content_Element = document.getElementById('content');
     if (content_Element) {
         ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+            <div className="container" style={{marginTop: '10px'}}>
                     <div className="d-flex flex-wrap mt-4">
                         {albums}
                     </div>
@@ -72,6 +72,61 @@ function AlbumDetailDOM(props) {
     );
 }
 
+function AlbumDetailContentDOM(props) {
+    let album = props.album;
+    let trackId = 0;
+    let tracks = album.tracks.items.map(track => {
+            trackId++;
+            return <AlbumDetailDOM key={track.id} albumUri={album.uri} trackId={trackId} track={track} />
+    });
+    let artists = album.artists.map(artist => {
+        return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
+    });
+    return(
+        <div className="container" style={{marginTop: '10px'}}>
+            <section>
+                <div className="d-flex align-items-baseline">
+                    <div>
+                        <img className="album-image" src={album.images[0]?.url}/>
+                    </div>
+                    <div className="album-title">
+                        <div className="album-name">
+                            {album.name}
+                        </div>
+                        <div className="album-artist">
+                            <span>
+                            {artists}
+                            </span>
+                        </div>
+                        <div className="album-date text-muted">
+                            {album.release_date}
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <table className="table table-hover align-middle album-table">
+                    <colgroup>
+                        <col span={1} style={{width:'5%'}}/>
+                        <col span={1} style={{width:'85%'}}/>
+                        <col span={1} style={{width:'10%'}}/>
+                        <col span={1} style={{width:'5%'}}/>
+                    </colgroup>
+                    <tbody>
+                        {tracks}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    );
+}
+
+function AlbumLinkDOM(props) {
+    return(
+        <a href="#" className="spotify-link" onClick={(e) => fetchAlbumTracks(e, props.albumId)}>{props.albumName}</a>
+    );
+}
+
 function generateAlbumDetailPageContent(album) {
     let trackId = 0;
     let tracks = album.tracks.items.map(track => {
@@ -80,13 +135,16 @@ function generateAlbumDetailPageContent(album) {
     });
     let content_Element = document.getElementById('content');
     if (content_Element) {
-        let artistsStr = '';
-        album.artists.forEach(artist => {
-            artistsStr += `${artist.name}, `;
+        // let artistsStr = '';
+        // album.artists.forEach(artist => {
+        //     artistsStr += `${artist.name}, `;
+        // });
+        // artistsStr = artistsStr.slice(0, artistsStr.length - 2);
+        let artists = album.artists.map(artist => {
+            return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
         });
-        artistsStr = artistsStr.slice(0, artistsStr.length - 2);
         ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+            <div className="container" style={{marginTop: '10px'}}>
                 <section>
                     <div className="d-flex align-items-baseline">
                         <div>
@@ -97,7 +155,9 @@ function generateAlbumDetailPageContent(album) {
                                 {album.name}
                             </div>
                             <div className="album-artist">
-                                {artistsStr}
+                                <span>
+                                {artists}
+                                </span>
                             </div>
                             <div className="album-date text-muted">
                                 {album.release_date}
@@ -125,7 +185,8 @@ function generateAlbumDetailPageContent(album) {
     }
 }
 
-function fetchAlbumTracks(album_id) {
+function fetchAlbumTracks(event, album_id) {
+    event.stopPropagation();
     let requestConfig = Object.assign({}, globalRequestConfig);
     requestConfig.headers["Content-Type"] = 'application/json';
     requestConfig.method = 'GET';

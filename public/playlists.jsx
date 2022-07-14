@@ -95,7 +95,7 @@ function PlaylistCardDOM(props) {
             </div>
             <div className="card-playlist-footer" >
                 <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={() => playEntirePlaylist(props.playlistUri)}>
+                    <button className="btn btn-success" width="48px" height="48px" onClick={(e) => playEntirePlaylist(e, props.playlistUri)}>
                         <i className="bi bi-play"></i>
                     </button>
                 </div>
@@ -134,18 +134,21 @@ function renderPlaylistsDOM() {
 }
 
 function PlaylistDetailDOM(props) {
-    let artistsStr = '';
-    props.track.artists.forEach(artist => {
-        artistsStr += `${artist.name}, `;
+    // let artistsStr = '';
+    // props.track.artists.forEach(artist => {
+    //     artistsStr += `${artist.name}, `;
+    // });
+    // artistsStr = artistsStr.slice(0, artistsStr.length - 2);
+    let artists = props.track.artists.map(artist => {
+        return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
     });
-    artistsStr = artistsStr.slice(0, artistsStr.length - 2);
 
     return(
         <tr className="album-table-row" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track.uri)}>
             <th scope="row">{props.trackId}</th>
             <td>{props.track.name}</td>
-            <td>{artistsStr}</td>
-            <td>{props.track.album.name}</td>
+            <td>{artists}</td>
+            <td><AlbumLinkDOM albumId={props.track.album.id} albumName={props.track.album.name} /></td>
             <td>{new Date(props.track.duration_ms).toISOString().slice(14,19)}</td>
             <td>{'...'}</td>
         </tr>
@@ -161,7 +164,7 @@ function generatePlaylistDetailPageContent(playlist) {
     let content_Element = document.getElementById('content');
     if (content_Element) {
         ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+            <div className="container" style={{marginTop: '10px'}}>
                 <section>
                     <div className="d-flex align-items-baseline">
                         <div>
@@ -245,7 +248,8 @@ function initPlaylists(userId, requestConfig) {
     }
 }
 
-function playEntirePlaylist(playlistUri) {
+function playEntirePlaylist(event, playlistUri) {
+    event.stopPropagation();
     let reqConfig = Object.assign({}, globalRequestConfig);
     reqConfig.headers["Content-Type"] = 'application/json';
     let playlistData = {

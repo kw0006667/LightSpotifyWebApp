@@ -24,6 +24,36 @@
     box-shadow: 0.3em 0.3em 1em rgba(0,0,0,0.3);
 }
 
+.artist-section {
+    margin: 30px auto;
+}
+.artist-section-title {
+    font-size: 18px;
+    font-weight: bold;
+    color:rgb(123, 123, 123);
+}
+
+.artist-image-banner {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    position: absolute;
+    height: 100%;
+    z-index: -1;
+    filter: blur(50px);
+    opacity: 0.3;
+}
+
+.artist-banner {
+    text-align: center;
+    position: relative;
+}
+
+.artist-title {
+    font-weight: bold;
+}
+
 .album-title {
     margin-left: 30px;
     font-weight: bold;
@@ -35,7 +65,9 @@
 
 .album-artist {
     padding-top: 2px;
+    padding-bottom: 2px;
     font-size: 24px;
+    font-weight: lighter;
     color: green;
 }
 
@@ -59,4 +91,13 @@
     display: -webkit-box;
     -webkit-line-clamp: 3; /* number of lines to show */
     -webkit-box-orient: vertical;
+}
+
+.spotify-link {
+    color: rgb(123, 123, 123);
+    text-decoration: none;
+}
+.spotify-link:hover {
+    color: rgb(123, 123, 123);
+    text-decoration: underline;
 }

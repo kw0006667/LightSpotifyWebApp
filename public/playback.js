@@ -546,28 +546,6 @@ function updateCoverPhoto(track) {
     }
 }
 
-function updatePlayingInfo(track) {
-    if (!track) {
-        return;
-    }
-
-    let playingInfo_Element = document.getElementById('playingInfo');
-    if (playingInfo_Element) {
-        let title = track.name;
-        let artistsStr = '';
-        track.artists.forEach(artist => {
-            artistsStr += `${artist.name}, `;
-        });
-        artistsStr = artistsStr.slice(0, artistsStr.length - 2);
-
-        playingInfo_Element.innerHTML = 
-        `
-        <div><span>${title}</span></div>
-        <sub class="text-muted">${artistsStr}</sub>
-        `;
-    }
-}
-
 function updateTrackDurationInfo(track) {
     if (!track) {
         return;

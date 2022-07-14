@@ -45,7 +45,7 @@ function searchInput(event) {
         let requestConfig = Object.assign({}, globalRequestConfig);
         let searchText = event.target.value;
 
-        fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(searchText)}&type=album,track,artist,playlist`, requestConfig)
+        fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(searchText)}&type=album,track,artist,playlist,show,episode`, requestConfig)
         .then(response => {
             if (response.status === 200) {
                 return response.json();
