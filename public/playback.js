@@ -541,7 +541,7 @@ function updateCoverPhoto(track) {
 
     let coverPhoto_Element = document.getElementById('coverPhoto');
     if (coverPhoto_Element) {
-        let imageUrl = track.album.images[0].url;
+        let imageUrl = track.type === 'track' ? track.album.images[0].url : track.images[0]?.url;
         coverPhoto_Element.setAttribute("src", imageUrl);
     }
 }

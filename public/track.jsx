@@ -34,14 +34,19 @@ function updatePlayingInfo(track) {
 
     let playingInfo_Element = document.getElementById('playingInfo');
     if (playingInfo_Element) {
-        let artists = track.artists.map(artist => {
-            return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
-        });
+        let artists = null;
+        if (track.type === 'track') {
+            artists = track.artists.map(artist => {
+                return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
+            });
+        } else {
+            artists = track.show.name;
+        }
         ReactDOM.render(
             <div>
                 <div>
                     <span>
-                        {<TrackLinkDOM track={track} /> }
+                        {track.type === 'track' ? <TrackLinkDOM track={track} /> : track.name }
                     </span>
                 </div>
                 <div>

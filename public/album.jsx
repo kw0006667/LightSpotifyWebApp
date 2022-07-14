@@ -83,7 +83,7 @@ function AlbumDetailContentDOM(props) {
         return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
     });
     return(
-        <div className="container" style={{marginTop: '10px'}}>
+        <div style={{marginTop: '50px', marginBottom: '50px'}}>
             <section>
                 <div className="d-flex align-items-baseline">
                     <div>

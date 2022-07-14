@@ -101,3 +101,11 @@
     color: rgb(123, 123, 123);
     text-decoration: underline;
 }
+
+.spotify-link-thin {
+    font-weight: lighter;
+}
+
+.spotify-link-small {
+    font-size: 12px;
+}
