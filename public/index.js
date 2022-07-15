@@ -61,7 +61,7 @@ function init() {
                 // initWebPlayback(access_token);
                 generateProfileDOMElements(data);
                 userId = data.id;
-                fetchRecentlyPlayed();
+                fetchHomePage();
                 // getAvailableDevices(requestConfig);
                 // initPlaylists(data.id, requestConfig);
                 // initPlaybackStatus(data.id, requestConfig);
@@ -174,7 +174,7 @@ function switchToPlaylistTab(element) {
     }
     switch (targetIndex) {
         case '0':
-            fetchRecentlyPlayed();
+            fetchHomePage();
             break;
         case '1':
             if (playlists._playlistsDOM) {

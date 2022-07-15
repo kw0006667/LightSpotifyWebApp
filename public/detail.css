@@ -4,12 +4,6 @@
     font-size: 14px;
     color:rgb(123, 123, 123);
 }
-.album-table-row td {
-    /* white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; */
-    /* max-width: 25%; */
-}
 
 .album-table {
     margin: 10px;

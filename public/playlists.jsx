@@ -125,7 +125,7 @@ function renderPlaylistsDOM() {
         ReactDOM.unmountComponentAtNode(content_Element);
 
         ReactDOM.render(
-            <div className="d-flex flex-wrap mt-4">
+            <div className="container d-flex flex-wrap mt-4">
                 {playlists._playlistsDOM}
             </div>
             , content_Element

@@ -4,7 +4,6 @@
  * Module exports.
  * @public
  */
-exports.fetchRecentlyPlayed = fetchRecentlyPlayed;
 
 
 /**
