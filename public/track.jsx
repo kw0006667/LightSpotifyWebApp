@@ -48,12 +48,12 @@ function updatePlayingInfo(track) {
             <div>
                 <div>
                     <span>
-                        {track.type === 'track' ? <TrackLinkDOM track={track} /> : track.name }
+                        {track.type === 'track' ? <TrackLinkDOM track={track} /> : <EpisodeLinkDOM episode={track}/> }
                     </span>
                 </div>
                 <div>
                     <sub>
-                        {artists}
+                        {track.type === 'track' ? artists : <PodcastLinkDOM podcast={track.show} /> }
                     </sub>
                 </div>
             </div>

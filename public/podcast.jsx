@@ -4,7 +4,6 @@
  * Module exports.
  * @public
  */
-exports.fetchRecentlyPlayed = fetchRecentlyPlayed;
 
 
 /**
@@ -54,7 +53,7 @@ function generatePodcastPageContent(savedPodcasts) {
 
 function PodcastDetailDOM(props) {
     return(
-        <tr className="album-table-row" onDoubleClick={() => playEpisodeInPodcast(props.podcastUri, props.episode.uri)}>
+        <tr className="podcast-table-row" onDoubleClick={() => playEpisodeInPodcast(props.podcastUri, props.episode.uri)} onClick={() => {fetchEpisodeDetail(props.episode.id)}}>
             <th scope="row">{props.trackId}</th>
             <td>
                 <div>
@@ -67,6 +66,18 @@ function PodcastDetailDOM(props) {
             <td>{'...'}</td>
         </tr>
     )
+}
+
+function EpisodeLinkDOM(props) {
+    return(
+        <a href="#" className="spotify-link" onClick={() => fetchEpisodeDetail(props.episode.id)}>{props.episode.name}</a>
+    );
+}
+
+function PodcastLinkDOM(props) {
+    return(
+        <a href="#" className="spotify-link" onClick={() => fetchPodcastEpisodes(props.podcast.id)}>{props.podcast.publisher}</a>
+    );
 }
 
 function generatePodcastDetailPageContent(podcast) {
@@ -87,7 +98,7 @@ function generatePodcastDetailPageContent(podcast) {
                                 {podcast.name}
                             </div>
                             <div className="album-artist">
-                                {podcast.publisher}
+                                <PodcastLinkDOM podcast={podcast} />
                             </div>
                             <div className="album-date text-muted">
                                 {podcast.description}
@@ -107,6 +118,45 @@ function generatePodcastDetailPageContent(podcast) {
                             {episodes}
                         </tbody>
                     </table>
+                </section>
+                
+            </div>
+            , content_Element
+        )
+    }
+}
+
+function generateEpisodeDetailPageContent(episode) {
+    let content_Element = document.getElementById('content');
+    if (content_Element) {
+        ReactDOM.render(
+            <div className="container" style={{marginTop: '10px'}}>
+                <section>
+                    <div className="d-flex align-items-baseline">
+                        <div>
+                            <img className="album-image" src={episode.images[0]?.url}/>
+                        </div>
+                        <div className="album-title">
+                            <div className="album-name">
+                                {episode.name}
+                            </div>
+                            <div className="album-artist">
+                                <PodcastLinkDOM podcast={episode.show} />
+                            </div>
+                            {/* <div className="album-date text-muted">
+                                {episode.description}
+                            </div> */}
+                        </div>
+                    </div>
+                </section>
+                <section className="artist-section">
+                    <div>
+                        Description
+                    </div>
+                    <div className="album-date text-muted">
+                        <div dangerouslySetInnerHTML={{ __html: episode.html_description}} />
+                        {/* {episode.html_description} */}
+                    </div>
                 </section>
                 
             </div>
@@ -155,6 +205,27 @@ function fetchSavedPodcasts() {
     })
     .catch(reason => {
         console.error(`fetchSavedAlbums:\n${reason}`);
+    });
+}
+
+function fetchEpisodeDetail(episode_id) {
+    let requestConfig = Object.assign({}, globalRequestConfig);
+    requestConfig.headers["Content-Type"] = 'application/json';
+    requestConfig.method = 'GET';
+
+    fetch(`https://api.spotify.com/v1/episodes/${episode_id}`, requestConfig)
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else if (response.status === 401) {
+            refreshToken();
+        }
+    })
+    .then(data => {
+        generateEpisodeDetailPageContent(data);
+    })
+    .catch(reason => {
+        console.error(`fetchEpisodeDetail:\n${reason}`);
     });
 }
 
