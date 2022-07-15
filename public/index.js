@@ -192,6 +192,9 @@ function switchToPlaylistTab(element) {
         case '4':
             fetchFollowedArtists();
             break;
+        case '5':
+            fetchSearchContent();
+            break;
         default:
             break;
     }

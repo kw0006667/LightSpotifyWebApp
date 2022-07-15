@@ -23,8 +23,8 @@
 <body>
   <main>
     <!-- header -->
-    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between px-3 mb-4 border-bottom" >
-      <a href="/" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none">Spotify</a>
+    <header class="d-flex flex-wrap align-items-center justify-content-between px-3 mb-4 border-bottom" >
+      <a href="/" class="d-flex align-items-center  text-dark text-decoration-none">Spotify</a>
       <ul id="headerTabsBar" class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
         <li>
           <a href="#" class="nav-link px-2 link-secondary link-item active" data-index="0" onclick="switchToPlaylistTab(this)">Home</a>
@@ -41,10 +41,10 @@
         <li>
           <a href="#" class="nav-link px-2 link-dark link-item" data-index="4" onclick="switchToPlaylistTab(this)">Artist</a>
         </li>
+        <li>
+          <a href="#" class="nav-link px-2 link-dark link-item" data-index="5" onclick="switchToPlaylistTab(this)">Search</a>
+        </li>
       </ul>
-      <div class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3 link-item" role="search">
-        <input type="text" class="form-control" placeholder="Search..." aria-label="Search" onkeyup="searchInput(event)">
-      </div>
       <div class="dropdown text-end">
         <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
           <img id="userIcon" src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
@@ -179,6 +179,7 @@
   <script src="./podcast.jsx" type="text/jsx"></script>
   <script src="./artist.jsx" type="text/jsx"></script>
   <script src="./track.jsx" type="text/jsx"></script>
+  <script src="./episode.jsx" type="text/jsx"></script>
   <script src="./search.jsx" type="text/jsx"></script>
 
   <!-- Cookie js -->

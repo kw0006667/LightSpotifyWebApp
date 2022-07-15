@@ -11,28 +11,41 @@
  * @private
  */
 
+function CategoryBoxDOM(props) {
+    return(
+        <div className="category-box" style={{cursor: 'pointer'}} onClick={(e) => fetchCategoryPlaylists(e, props.category.id)}>
+            <img src={props.category.icons[0]?.url} width={'128px'} height={'128px'} />
+            <div className="category-box-name">
+                <span>{props.category.name}</span>
+            </div>
+        </div>
+    )
+}
 
-function openSearchPage() {
+function generateSearchPageContent(categories) {
+    let categoryArray = categories.map(category =>
+            <CategoryBoxDOM key={category.id} category={category} />
+        );
+
     let pageContentReactDom = document.getElementById('content');
     if (pageContentReactDom) {
         ReactDOM.render(
-            <div>
-                <section>
+            <div className="container" style={{marginTop: '10px'}}>
+                 <section>
                     <div className="m-3">
                         <input type="text" list="datalistOptions" className="form-control" id="searchInput" placeholder="Search" onKeyUp={searchInput}></input>
-                        <datalist id="datalistOptions">
-                            <option value="San Francisco">
-                            </option><option value="New York">
-                            </option><option value="Seattle">
-                            </option><option value="Los Angeles">
-                            </option><option value="Chicago">
-                            </option></datalist>
                     </div>
                 </section>
-                <section>
-                    <div id="resultContent">
-                    </div>
-                </section>
+                <div id="resultContent">
+                    <section className="artist-section">
+                        <div className="artist-section-title">
+                            Categories
+                        </div>
+                        <div className="d-flex flex-wrap">
+                            {categoryArray}
+                        </div>
+                    </section>
+                </div>
             </div>
         , pageContentReactDom
         );
@@ -66,22 +79,110 @@ function searchInput(event) {
 }
 
 function generateResultDOMElement(result) {
-    let pageContentReactDom = document.getElementById('content');
+    let pageContentReactDom = document.getElementById('resultContent');
+    let trackList = [];
+    let artistList = [];
+    let albumList = [];
+    let episodeList = [];
     if (result?.tracks?.items?.length > 0) {
-        let trackList = result.tracks.items.map(track =>
+        trackList = result.tracks.items.slice(0, 10).map(track =>
             <TrackResultDOM key={track.id} track={track} />
             );
-        
-        ReactDOM.render(
-            <div className="list-group w-auto py-3">
-                {trackList}
-            </div>
-            ,pageContentReactDom
-        );
     }
+
+    if (result?.artists?.items?.length > 0) {
+        artistList = result.artists.items.slice(0, 6).map(artist =>
+            <ArtistCardDOM key={artist.id} artist={artist} />
+            );
+    }
+
+    if (result?.albums?.items?.length > 0) {
+        albumList = result.albums.items.slice(0, 6).map(album =>
+            <AlbumCardDOM key={album.id} album={album} />
+            );
+    }
+
+    if (result?.episodes?.items?.length > 0) {
+        episodeList = result?.episodes?.items.slice(0, 6).map(episode =>
+            <EpisodeCardDOM key={episode.id} episode={episode} />
+            );
+    }
+        
+    ReactDOM.render(
+        <div>
+            <section className="artist-section" >
+                <div className="artist-section-title">Songs</div>
+                <table className="table table-hover align-middle album-table">
+                    <colgroup>
+                        <col span={1} style={{width:'5%'}}/>
+                        <col span={1} style={{width:'15%'}}/>
+                        <col span={1} style={{width:'35%'}}/>
+                        <col span={1} style={{width:'35%'}}/>
+                        <col span={1} style={{width:'5%'}}/>
+                        <col span={1} style={{width:'5%'}}/>
+                    </colgroup>
+                    <tbody>
+                        {trackList}
+                    </tbody>
+                </table>
+            </section>
+            <section className="artist-section">
+                <div className="artist-section-title d-flex justify-content-between">
+                    <div>
+                        Artists
+                    </div>
+                </div>
+                <div className="d-flex flex-wrap">
+                    {artistList}
+                </div>
+            </section>
+            <section className="artist-section">
+                <div className="artist-section-title d-flex justify-content-between">
+                    <div>
+                        Albums
+                    </div>
+                </div>
+                <div className="d-flex flex-wrap">
+                    {albumList}
+                </div>
+            </section>
+            <section className="artist-section">
+                <div className="artist-section-title d-flex justify-content-between">
+                    <div>
+                        Episodes
+                    </div>
+                </div>
+                <div className="d-flex flex-wrap">
+                    {episodeList}
+                </div>
+            </section>
+        </div>
+        ,pageContentReactDom
+    );
+    
 }
 
+function fetchSearchContent() {
+    let requestConfig = Object.assign({}, globalRequestConfig);
+    requestConfig.headers["Content-Type"] = 'application/json';
+    requestConfig.method = 'GET';
 
-            // <ol className="list-group list-group-numbered">
-            //     {trackList}
-            // </ol>
+    fetch(`https://api.spotify.com/v1/browse/categories?limit=50`, requestConfig)
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+        } else if (response.status === 401) {
+            refreshToken();
+        }
+    })
+    .then(data => {
+        // check if there are still next
+        if (data && data.next) {
+            
+        }
+        generateSearchPageContent(data.categories.items);
+    })
+    .catch(reason => {
+        console.error(`fetchSearchContent:\n${reason}`);
+    });
+}
