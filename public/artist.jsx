@@ -16,18 +16,17 @@ exports.initPlaybackStatus = initPlaybackStatus;
     let artist_uri = artist.uri;
 
     return(
-        <div className="card card-playlist m-2" onClick={(e) => fetchArtistDetail(e, artist.id)}>
-            <img src={imageUrl} className="card-img-top" alt="..." height="200px" width="200px" />
+        <div className="card-playlist m-2" onClick={(e) => fetchArtistDetail(e, artist.id)}>
+            <div style={{position: 'relative'}}>
+                <img src={imageUrl} className="card-img-top card-playlist-img" alt="..." height="200px" width="200px" />
+                <div className="card-cover"></div>
+                <button className="btn btn-success card-play-button" width="48px" height="48px" onClick={() => playRecentlyPlayedTrack(null, artist_uri)}>
+                    <i className="bi bi-play"></i>
+                </button>
+            </div>
             <div className="card-body">
                 <h6 className="card-title">{artist.name}</h6>
                 <span className="card-subtitle mb-2 text-muted">{artist.type}</span>
-            </div>
-            <div className="card-playlist-footer" >
-                <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={() => playRecentlyPlayedTrack(null, artist_uri)}>
-                        <i className="bi bi-play"></i>
-                    </button>
-                </div>
             </div>
         </div>
     );

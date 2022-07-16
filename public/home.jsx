@@ -14,26 +14,23 @@
  function RecentlyPlayedCardDOM(props) {
     let track = props.track;
     let imageUrl = track.album.images[0]?.url
-    let artistsStr = '';
-    track.artists.forEach(artist => {
-        artistsStr += `${artist.name}, `;
+    let artists = track.artists.map(artist => {
+        return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
     });
-    artistsStr = artistsStr.slice(0, artistsStr.length - 2);
     let playlist_uri = props.context?.uri;
 
     return(
-        <div className="card card-playlist m-2" onClick={(e) => fetchAlbumTracks(e, track.album.id)}>
-            <img src={imageUrl} className="card-img-top" alt="..." height="200px" width="200px" />
-            <div className="card-body">
-                <h6 className="card-title">{track.name}</h6>
-                <span className="card-subtitle mb-2 text-muted">{artistsStr}</span>
+        <div className="card-playlist m-2" onClick={(e) => fetchAlbumTracks(e, track.album.id)}>
+            <div style={{position: 'relative'}}>
+                <img src={imageUrl} className="card-img-top card-playlist-img" alt="..." height="200px" width="200px" />
+                <div className="card-cover"></div>
+                <button className="btn btn-success card-play-button" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, track.uri, playlist_uri)}>
+                    <i className="bi bi-play"></i>
+                </button>
             </div>
-            <div className="card-playlist-footer" >
-                <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, track.uri, playlist_uri)}>
-                        <i className="bi bi-play"></i>
-                    </button>
-                </div>
+            <div className="card-body">
+                <div className="card-title">{track.name}</div>
+                <div className="card-subtitle mb-2 text-muted">{artists}</div>
             </div>
         </div>
     );

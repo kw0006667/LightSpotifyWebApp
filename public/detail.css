@@ -69,6 +69,17 @@
     font-size: 12px;
 }
 
+.album-follow {
+    margin-top: 15px;
+    width: 180px;
+    justify-content: space-between;
+}
+
+.album-follow-btn {
+    width: 80px;
+    height: 30px;
+}
+
 .podcast-table-row {
     padding-top: 3px;
     padding-bottom: 3px;
