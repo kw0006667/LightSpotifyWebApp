@@ -46,6 +46,13 @@
 
 .artist-title {
     font-weight: bold;
+    text-align: center;
+}
+
+.artist-follow {
+    margin: auto;
+    width: 180px;
+    justify-content: space-between;
 }
 
 .album-title {

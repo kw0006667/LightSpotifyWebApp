@@ -68,41 +68,126 @@ function ArtistTopTracksDOM(props) {
     );
 }
 
-function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, relativedArtists) {
-    let trackId = 0;
-    let tracks = topTracks.tracks.map(track => {
-            trackId++;
-            return <ArtistTopTracksDOM key={track.id} artistUri={artist.uri} trackId={trackId} track={track} />
+class ArtistDetailContentDOM extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {followState: false};
+        this.artist = this.props.artist;
+        this.topTracks = this.props.topTracks;
+        this.recentlyAlbums = this.props.recentlyAlbums;
+        this.relativeArtists = this.props.relativeArtists;
+    }
+
+    componentDidMount() {
+        this.getFollowingStatus();
+    }
+
+    getFollowingStatus() {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'GET';
+
+        fetch(`https://api.spotify.com/v1/me/following/contains?type=artist&ids=${this.artist.id}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .then(data => {
+            if (data?.length > 0) {
+                this.setState({followState: data[0]});
+            }
+        })
+        .catch(reason => {
+            console.error(`getFollowingStatus:\n${reason}`);
         });
+    }
 
-    let albums = recentlyAlbums.map(album => 
-             <AlbumCardDOM key={album.id} album={album} />
-        );
-        
-    let relatedArtists = relativedArtists.map(artist => 
-            <ArtistCardDOM key={artist.id} artist={artist} />
-        );
+    setFollowingStatus(e) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = this.state.followState ? 'DELETE' : 'PUT';
 
-    let content_Element = document.getElementById('content');
-    if (content_Element) {
+        fetch(`https://api.spotify.com/v1/me/following?type=artist&ids=${this.artist.id}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                this.setState({followState: !this.state.followState});
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`setFollowingStatus:\n${reason}`);
+        });
+    }
 
-        ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+    playTopTrackInArtist(e, artistUri) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'PUT';
+
+        let artistData = {
+            context_uri: artistUri
+        };
+        requestConfig.body = JSON.stringify(artistData);
+
+        let currentPlayingDeviceId = '';
+        if (Devices.currentDeviceId) {
+            currentPlayingDeviceId = Devices.currentDeviceId;
+        } else {
+            currentPlayingDeviceId = Playback._deviceId;
+        }
+
+        fetch(`https://api.spotify.com/v1/me/player/play?device_id=${currentPlayingDeviceId}`, requestConfig)
+        .then(response => {
+            if (response.status == 204) {
+
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`play artist:\n${reason}`);
+        });
+    }
+
+    render() {
+        let trackId = 0;
+        let tracks = this.topTracks.tracks.map(track => {
+                trackId++;
+                return <ArtistTopTracksDOM key={track.id} artistUri={this.artist.uri} trackId={trackId} track={track} />
+            });
+
+        let albums = this.recentlyAlbums.map(album => 
+                <AlbumCardDOM key={album.id} album={album} />
+            );
+            
+        let relatedArtists = this.relativeArtists.map(artist => 
+                <ArtistCardDOM key={artist.id} artist={artist} />
+            );
+        return(
+            <div>
                 <section className="artist-section">
                     <div className="align-items-baseline artist-banner">
                         <div >
-                            <div className="artist-image-banner" style={{backgroundImage: `url(${artist.images[0]?.url})`}}></div>
-                            <img className="album-image rounded-circle" src={artist.images[0]?.url}/>
+                            <div className="artist-image-banner" style={{backgroundImage: `url(${this.artist.images[0]?.url})`}}></div>
+                            <img className="album-image rounded-circle" src={this.artist.images[0]?.url}/>
                         </div>
                         <div className="artist-title">
                             <div className="album-name">
-                                {artist.name}
+                                {this.artist.name}
+                            </div>
+                            <div className="artist-follow d-flex">
+                                <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (this.state.followState ? 'active' : '')} onClick={(e) => this.setFollowingStatus(e)}>{this.state.followState ? 'Following' : 'Follow'}</button>
+                                <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => this.playTopTrackInArtist(e, this.artist.uri)}>Play</button>
                             </div>
                             <div className="album-artist">
-                                {artist.genres[0]}
+                                {this.artist.genres[0]}
                             </div>
                             <div className="album-date text-muted">
-                                {'Followers: ' + artist.followers?.total}
+                                {'Followers: ' + this.artist.followers?.total}
                             </div>
                         </div>
                     </div>
@@ -130,7 +215,7 @@ function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, rela
                             Albums
                         </div>
                         <div>
-                            <a href="#" className="spotify-link spotify-link-thin spotify-link-small" onClick={(e) => fetchAllArtistAlbums(e, artist.id)}>See All</a>
+                            <a href="#" className="spotify-link spotify-link-thin spotify-link-small" onClick={(e) => fetchAllArtistAlbums(e, this.artist.id)}>See All</a>
                         </div>
                     </div>
                     <div className="d-flex flex-wrap">
@@ -145,6 +230,19 @@ function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, rela
                         {relatedArtists}
                     </div>
                 </section>
+            </div>
+        );
+    }
+}
+
+function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, relativeArtists) {
+
+    let content_Element = document.getElementById('content');
+    if (content_Element) {
+
+        ReactDOM.render(
+            <div style={{marginTop: '10px'}}>
+                <ArtistDetailContentDOM artist={artist} topTracks={topTracks} recentlyAlbums={recentlyAlbums} relativeArtists={relativeArtists} />
             </div>
             , content_Element
         )

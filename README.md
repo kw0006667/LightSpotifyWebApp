@@ -31,12 +31,13 @@ This is a web app which was created by Spotify Web API and Spotify Web Playback 
   * Add/remove new tracks to the existing playlist (Coming...)
   * Create a new playlist (Coming...)
   * Shuffle play the playlist (Coming...)
+  * Follow/nofollow playlists
 * Album
   * Show the existing albums
-  * Like/save albums (Coming...)
+  * Like/save albums
 * Artist
   * Navigate to the artist page
-  * Like the artist to store (Coming...)
+  * Like the artist to store
 * Standalone App (Coming...)
   * Electron or CEF?
   * React Native?
