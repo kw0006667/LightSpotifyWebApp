@@ -13,19 +13,19 @@
 
 function PodcastCardDOM(props) {
     let podcast = props.podcast;
-    let imageUrl = podcast.show.images[0]?.url;
+    let imageUrl = podcast.images[0]?.url;
     return(
-        <div className="card-playlist m-2" onClick={() => fetchPodcastEpisodes(podcast.show.id)}>
+        <div className="card-playlist m-2" onClick={() => fetchPodcastEpisodes(podcast.id)}>
             <div style={{position: 'relative'}}>
                 <img src={imageUrl} className="card-img-top card-playlist-img" alt="..." height="200px" width="200px" />
                 <div className="card-cover"></div>
-                <button className="btn btn-success card-play-button" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, null /* track_id */, podcast.show.uri)}>
+                <button className="btn btn-success card-play-button" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, null /* track_id */, podcast.uri)}>
                     <i className="bi bi-play"></i>
                 </button>
             </div>
             <div className="card-body">
-                <div className="card-title">{podcast.show.name}</div>
-                <div className="card-subtitle mb-2 text-muted">{podcast.show.publisher}</div>
+                <div className="card-title">{podcast.name}</div>
+                <div className="card-subtitle mb-2 text-muted">{podcast.publisher}</div>
             </div>
         </div>
     );
@@ -34,7 +34,7 @@ function PodcastCardDOM(props) {
 
 function generatePodcastPageContent(savedPodcasts) {
     let podcasts = savedPodcasts.items.map(podcast => 
-        <PodcastCardDOM key={podcast.show.id} podcast={podcast} />
+        <PodcastCardDOM key={podcast.show.id} podcast={podcast.show} />
     );
 
     let content_Element = document.getElementById('content');
@@ -145,7 +145,7 @@ class PodcastDetailContentDOM extends React.Component {
     setFollowingStatus(e) {
         let requestConfig = Object.assign({}, globalRequestConfig);
         requestConfig.headers["Content-Type"] = 'application/json';
-        requestConfig.method = this.state.followState ? 'DELETE' : 'PUT';
+        requestConfig.method = this.state.saveState ? 'DELETE' : 'PUT';
 
         fetch(`https://api.spotify.com/v1/me/shows?ids=${this.state.podcastId}`, requestConfig)
         .then(response => {
