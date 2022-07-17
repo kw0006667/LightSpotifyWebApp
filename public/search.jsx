@@ -85,6 +85,7 @@ function generateResultDOMElement(result) {
     let albumList = [];
     let playlistList = [];
     let episodeList = [];
+    let podcastList = [];
     if (result?.tracks?.items?.length > 0) {
         trackList = result.tracks.items.slice(0, 10).map(track =>
             <TrackResultDOM key={track.id} track={track} />
@@ -117,6 +118,12 @@ function generateResultDOMElement(result) {
     if (result?.episodes?.items?.length > 0) {
         episodeList = result?.episodes?.items.slice(0, 6).map(episode =>
             <EpisodeCardDOM key={episode.id} episode={episode} />
+            );
+    }
+
+    if (result?.shows?.items?.length > 0) {
+        podcastList = result?.shows?.items.slice(0, 6).map(podcast =>
+            <PodcastCardDOM key={podcast.id} podcast={podcast} />
             );
     }
         
@@ -166,6 +173,16 @@ function generateResultDOMElement(result) {
                 </div>
                 <div className="d-flex flex-wrap">
                     {playlistList}
+                </div>
+            </section>
+            <section className="artist-section">
+                <div className="artist-section-title d-flex justify-content-between">
+                    <div>
+                        Podcasts
+                    </div>
+                </div>
+                <div className="d-flex flex-wrap">
+                    {podcastList}
                 </div>
             </section>
             <section className="artist-section">
