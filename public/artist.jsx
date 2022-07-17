@@ -16,18 +16,17 @@ exports.initPlaybackStatus = initPlaybackStatus;
     let artist_uri = artist.uri;
 
     return(
-        <div className="card card-playlist m-2" onClick={(e) => fetchArtistDetail(e, artist.id)}>
-            <img src={imageUrl} className="card-img-top" alt="..." height="200px" width="200px" />
+        <div className="card-playlist m-2" onClick={(e) => fetchArtistDetail(e, artist.id)}>
+            <div style={{position: 'relative'}}>
+                <img src={imageUrl} className="card-img-top card-playlist-img" alt="..." height="200px" width="200px" />
+                <div className="card-cover"></div>
+                <button className="btn btn-success card-play-button" width="48px" height="48px" onClick={() => playRecentlyPlayedTrack(null, artist_uri)}>
+                    <i className="bi bi-play"></i>
+                </button>
+            </div>
             <div className="card-body">
                 <h6 className="card-title">{artist.name}</h6>
                 <span className="card-subtitle mb-2 text-muted">{artist.type}</span>
-            </div>
-            <div className="card-playlist-footer" >
-                <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={() => playRecentlyPlayedTrack(null, artist_uri)}>
-                        <i className="bi bi-play"></i>
-                    </button>
-                </div>
             </div>
         </div>
     );
@@ -69,41 +68,203 @@ function ArtistTopTracksDOM(props) {
     );
 }
 
-function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, relativedArtists) {
-    let trackId = 0;
-    let tracks = topTracks.tracks.map(track => {
-            trackId++;
-            return <ArtistTopTracksDOM key={track.id} artistUri={artist.uri} trackId={trackId} track={track} />
+class ArtistDetailContentDOM extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isDataReturn: this.props.isDataReturn,
+            artistId: this.props.artistId,
+            followState: false,
+            artist: null,
+            topTracks: null,
+            recentlyAlbums: null,
+            relativeArtists: null
+        };
+    }
+
+    // useEffect() {
+    //     console.log(this.props.artistId);
+    // }
+
+    componentDidMount() {
+        this.getFollowingStatus()
+        this.fetchArtistDetail(this.state.artistId);
+    }
+
+    componentDidUpdate() {
+        if (this.state.artistId !== this.props.artistId) {
+            this.setState((state, props) =>({
+                isDataReturn: false,
+                artistId: props.artistId
+            }), () => {
+                console.log(this.state.artistId);
+                this.getFollowingStatus();
+                this.fetchArtistDetail(this.state.artistId);
+            });
+        }
+    }
+
+    fetchArtistDetail(artist_id) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'GET';
+    
+        let promiseArray = [];
+        // Get Artist
+        promiseArray.push(
+                fetch(`https://api.spotify.com/v1/artists/${artist_id}`, requestConfig)
+        );
+        // Get Artist's top tracks
+        promiseArray.push(
+            fetch(`https://api.spotify.com/v1/artists/${artist_id}/top-tracks?market=${userProfile.country}`, requestConfig)
+        );
+        // Get Artist's first 5 albums
+        promiseArray.push(
+                fetch(`https://api.spotify.com/v1/artists/${artist_id}/albums?limit=20`, requestConfig)
+        );
+        // Get Artist's relative
+        promiseArray.push(
+            fetch(`https://api.spotify.com/v1/artists/${artist_id}/related-artists`, requestConfig)
+        );
+    
+        Promise.all(promiseArray)
+            .then(responses => {
+                return Promise.all(responses.map(res => res.json()));
+            })
+            .then(data => {
+                if (data?.length < promiseArray.length || !data[0] || !data[1]) {
+                    throw('data response were not enough');
+                } else {
+                    this.setState({
+                        isDataReturn: true,
+                        artist: data[0],
+                        topTracks: data[1],
+                        recentlyAlbums: data[2].items.filter( (v, i, a) => a.findIndex(v2 => (v2.name === v.name)) === i).slice(0, data[2].items.length > 6 ? 6 : data[2].items.length),
+                        relativeArtists: data[3].artists.slice(0, data[3].artists.length > 6 ? 6 : data[3].artists.length)
+                    });
+                }
+            })
+            .catch(reason => {
+                console.error(`fetchArtistDetail:\n${reason}`);
+            });
+    }
+
+    getFollowingStatus() {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'GET';
+
+        fetch(`https://api.spotify.com/v1/me/following/contains?type=artist&ids=${this.state.artistId}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .then(data => {
+            if (data?.length > 0) {
+                this.setState({followState: data[0]});
+            }
+        })
+        .catch(reason => {
+            console.error(`getFollowingStatus:\n${reason}`);
         });
+    }
 
-    let albums = recentlyAlbums.map(album => 
-             <AlbumCardDOM key={album.id} album={album} />
-        );
-        
-    let relatedArtists = relativedArtists.map(artist => 
-            <ArtistCardDOM key={artist.id} artist={artist} />
-        );
+    setFollowingStatus(e) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = this.state.followState ? 'DELETE' : 'PUT';
 
-    let content_Element = document.getElementById('content');
-    if (content_Element) {
+        fetch(`https://api.spotify.com/v1/me/following?type=artist&ids=${this.state.artist.id}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                this.setState({followState: !this.state.followState});
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`setFollowingStatus:\n${reason}`);
+        });
+    }
 
-        ReactDOM.render(
-            <div style={{marginTop: '10px'}}>
+    playTopTrackInArtist(e, artistUri) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'PUT';
+
+        let artistData = {
+            context_uri: artistUri
+        };
+        requestConfig.body = JSON.stringify(artistData);
+
+        let currentPlayingDeviceId = '';
+        if (Devices.currentDeviceId) {
+            currentPlayingDeviceId = Devices.currentDeviceId;
+        } else {
+            currentPlayingDeviceId = Playback._deviceId;
+        }
+
+        fetch(`https://api.spotify.com/v1/me/player/play?device_id=${currentPlayingDeviceId}`, requestConfig)
+        .then(response => {
+            if (response.status == 204) {
+
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`play artist:\n${reason}`);
+        });
+    }
+
+    render() {
+        if (!this.state.isDataReturn) {
+            return(
+            <div className="text-center">
+                <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+          );
+        }
+
+        let trackId = 0;
+        let tracks = this.state.topTracks.tracks.map(track => {
+                trackId++;
+                return <ArtistTopTracksDOM key={track.id} artistUri={this.state.artist.uri} trackId={trackId} track={track} />
+            });
+
+        let albums = this.state.recentlyAlbums.map(album => 
+                <AlbumCardDOM key={album.id} album={album} />
+            );
+            
+        let relatedArtists = this.state.relativeArtists.map(artist => 
+                <ArtistCardDOM key={artist.id} artist={artist} />
+            );
+        return(
+            <div>
                 <section className="artist-section">
                     <div className="align-items-baseline artist-banner">
                         <div >
-                            <div className="artist-image-banner" style={{backgroundImage: `url(${artist.images[0]?.url})`}}></div>
-                            <img className="album-image rounded-circle" src={artist.images[0]?.url}/>
+                            <div className="artist-image-banner" style={{backgroundImage: `url(${this.state.artist.images[0]?.url})`}}></div>
+                            <img className="album-image rounded-circle" src={this.state.artist.images[0]?.url}/>
                         </div>
                         <div className="artist-title">
                             <div className="album-name">
-                                {artist.name}
+                                {this.state.artist.name}
+                            </div>
+                            <div className="artist-follow d-flex">
+                                <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (this.state.followState ? 'active' : '')} onClick={(e) => this.setFollowingStatus(e)}>{this.state.followState ? 'Following' : 'Follow'}</button>
+                                <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => this.playTopTrackInArtist(e, this.state.artist.uri)}>Play</button>
                             </div>
                             <div className="album-artist">
-                                {artist.genres[0]}
+                                {this.state.artist.genres[0]}
                             </div>
                             <div className="album-date text-muted">
-                                {'Followers: ' + artist.followers?.total}
+                                {'Followers: ' + this.state.artist.followers?.total}
                             </div>
                         </div>
                     </div>
@@ -131,7 +292,7 @@ function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, rela
                             Albums
                         </div>
                         <div>
-                            <a href="#" className="spotify-link spotify-link-thin spotify-link-small" onClick={(e) => fetchAllArtistAlbums(e, artist.id)}>See All</a>
+                            <a href="#" className="spotify-link spotify-link-thin spotify-link-small" onClick={(e) => fetchAllArtistAlbums(e, this.state.artist.id)}>See All</a>
                         </div>
                     </div>
                     <div className="d-flex flex-wrap">
@@ -146,6 +307,19 @@ function generateArtistDetailPageContent(artist, topTracks, recentlyAlbums, rela
                         {relatedArtists}
                     </div>
                 </section>
+            </div>
+        );
+    }
+}
+
+function generateArtistDetailPageContent(artist_id) {
+
+    let content_Element = document.getElementById('content');
+    if (content_Element) {
+
+        ReactDOM.render(
+            <div style={{marginTop: '10px'}}>
+                <ArtistDetailContentDOM artistId={artist_id} isDataReturn={false}/>
             </div>
             , content_Element
         )
@@ -193,45 +367,7 @@ function fetchFollowedArtists() {
 
 function fetchArtistDetail(event, artist_id) {
     event.stopPropagation();
-    let requestConfig = Object.assign({}, globalRequestConfig);
-    requestConfig.headers["Content-Type"] = 'application/json';
-    requestConfig.method = 'GET';
-
-    let promiseArray = [];
-    // Get Artist
-    promiseArray.push(
-            fetch(`https://api.spotify.com/v1/artists/${artist_id}`, requestConfig)
-    );
-    // Get Artist's top tracks
-    promiseArray.push(
-        fetch(`https://api.spotify.com/v1/artists/${artist_id}/top-tracks?market=${userProfile.country}`, requestConfig)
-    );
-    // Get Artist's first 5 albums
-    promiseArray.push(
-            fetch(`https://api.spotify.com/v1/artists/${artist_id}/albums?limit=20`, requestConfig)
-    );
-    // Get Artist's relative
-    promiseArray.push(
-        fetch(`https://api.spotify.com/v1/artists/${artist_id}/related-artists`, requestConfig)
-    );
-
-    Promise.all(promiseArray)
-        .then(responses => {
-            return Promise.all(responses.map(res => res.json()));
-        })
-        .then(data => {
-            if (data?.length < promiseArray.length || !data[0] || !data[1]) {
-                throw('data response were not enough');
-            } else {
-                generateArtistDetailPageContent(data[0] /* Artist's info */,
-                                                 data[1] /* Artist's top tracks */,
-                                                 data[2].items.filter( (v, i, a) => a.findIndex(v2 => (v2.name === v.name)) === i).slice(0, data[2].items.length > 6 ? 6 : data[2].items.length) /* Artist's albums */,
-                                                 data[3].artists.slice(0, data[3].artists.length > 6 ? 6 : data[3].artists.length) /* Artist's relative */);
-            }
-        })
-        .catch(reason => {
-            console.error(`fetchArtistDetail:\n${reason}`);
-        });
+    generateArtistDetailPageContent(artist_id);
 }
 
 function fetchAllArtistAlbums(event, artist_id) {

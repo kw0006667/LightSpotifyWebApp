@@ -46,6 +46,13 @@
 
 .artist-title {
     font-weight: bold;
+    text-align: center;
+}
+
+.artist-follow {
+    margin: auto;
+    width: 180px;
+    justify-content: space-between;
 }
 
 .album-title {
@@ -67,6 +74,17 @@
 
 .album-date {
     font-size: 12px;
+}
+
+.album-follow {
+    margin-top: 15px;
+    width: 180px;
+    justify-content: space-between;
+}
+
+.album-follow-btn {
+    width: 80px;
+    height: 30px;
 }
 
 .podcast-table-row {

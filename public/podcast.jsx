@@ -15,18 +15,17 @@ function PodcastCardDOM(props) {
     let podcast = props.podcast;
     let imageUrl = podcast.show.images[0]?.url;
     return(
-        <div className="card card-playlist m-2" onClick={() => fetchPodcastEpisodes(podcast.show.id)}>
-            <img src={imageUrl} className="card-img-top" alt="..." height="200px" width="200px" />
-            <div className="card-body">
-                <h6 className="card-title">{podcast.show.name}</h6>
-                <span className="card-subtitle mb-2 text-muted">{podcast.show.publisher}</span>
+        <div className="card-playlist m-2" onClick={() => fetchPodcastEpisodes(podcast.show.id)}>
+            <div style={{position: 'relative'}}>
+                <img src={imageUrl} className="card-img-top card-playlist-img" alt="..." height="200px" width="200px" />
+                <div className="card-cover"></div>
+                <button className="btn btn-success card-play-button" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, null /* track_id */, podcast.show.uri)}>
+                    <i className="bi bi-play"></i>
+                </button>
             </div>
-            <div className="card-playlist-footer" >
-                <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={(e) => playRecentlyPlayedTrack(e, null /* track_id */, podcast.show.uri)}>
-                        <i className="bi bi-play"></i>
-                    </button>
-                </div>
+            <div className="card-body">
+                <div className="card-title">{podcast.show.name}</div>
+                <div className="card-subtitle mb-2 text-muted">{podcast.show.publisher}</div>
             </div>
         </div>
     );
@@ -80,28 +79,151 @@ function PodcastLinkDOM(props) {
     );
 }
 
-function generatePodcastDetailPageContent(podcast) {
-    let episodes = podcast.episodes.items.map(episode => 
-            <PodcastDetailDOM key={episode.id} episode={episode} podcastUri={podcast.uri} />
+class PodcastDetailContentDOM extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isDataReturn: false,
+            podcastId: this.props.podcastId,
+            saveState: false,
+            podcast: null
+        };
+    }
+
+    componentDidMount() {
+        this.getFollowingStatus();
+        this.fetchPodcastDetail();
+    }
+
+    fetchPodcastDetail() {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'GET';
+    
+        fetch(`https://api.spotify.com/v1/shows/${this.state.podcastId}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .then(data => {
+            this.setState({
+                isDataReturn: true,
+                podcast: data
+            });
+        })
+        .catch(reason => {
+            console.log(`fetchPodcastEpisodes:\n${reason}`);
+        });
+    }
+
+    getFollowingStatus() {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'GET';
+
+        fetch(`https://api.spotify.com/v1/me/shows/contains?ids=${this.state.podcastId}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .then(data => {
+            if (data?.length > 0) {
+                this.setState({saveState: data[0]});
+            }
+        })
+        .catch(reason => {
+            console.error(`getFollowingStatus:\n${reason}`);
+        });
+    }
+
+    setFollowingStatus(e) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = this.state.followState ? 'DELETE' : 'PUT';
+
+        fetch(`https://api.spotify.com/v1/me/shows?ids=${this.state.podcastId}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                this.setState({saveState: !this.state.saveState});
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`setFollowingStatus:\n${reason}`);
+        });
+    }
+
+    playEntirePodcast(e, podcastUri) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'PUT';
+
+        let artistData = {
+            context_uri: podcastUri
+        };
+        requestConfig.body = JSON.stringify(artistData);
+
+        let currentPlayingDeviceId = '';
+        if (Devices.currentDeviceId) {
+            currentPlayingDeviceId = Devices.currentDeviceId;
+        } else {
+            currentPlayingDeviceId = Playback._deviceId;
+        }
+
+        fetch(`https://api.spotify.com/v1/me/player/play?device_id=${currentPlayingDeviceId}`, requestConfig)
+        .then(response => {
+            if (response.status == 204) {
+
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`play artist:\n${reason}`);
+        });
+    }
+
+    render() {
+        if (!this.state.isDataReturn) {
+            return(
+                <div className="text-center">
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            );
+        }
+
+        let episodes = this.state.podcast.episodes.items.map(episode => 
+            <PodcastDetailDOM key={episode.id} episode={episode} podcastUri={this.state.podcast.uri} />
         );
-    let content_Element = document.getElementById('content');
-    if (content_Element) {
-        ReactDOM.render(
-            <div className="container" style={{marginTop: '10px'}}>
+        return(
+            <div>
                 <section>
                     <div className="d-flex align-items-baseline">
                         <div>
-                            <img className="album-image" src={podcast.images[0]?.url}/>
+                            <img className="album-image" src={this.state.podcast.images[0]?.url}/>
                         </div>
                         <div className="album-title">
                             <div className="album-name">
-                                {podcast.name}
+                                {this.state.podcast.name}
                             </div>
                             <div className="album-artist">
-                                <PodcastLinkDOM podcast={podcast} />
+                                <PodcastLinkDOM podcast={this.state.podcast} />
                             </div>
                             <div className="album-date text-muted">
-                                {podcast.description}
+                                {this.state.podcast.description}
+                            </div>
+                            <div className="album-follow d-flex">
+                                <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (this.state.saveState ? 'active' : '')} onClick={(e) => this.setFollowingStatus(e)}>{this.state.saveState ? 'Saved' : 'Save'}</button>
+                                <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => this.playEntirePodcast(e, this.state.podcast.uri)}>Play</button>
                             </div>
                         </div>
                     </div>
@@ -119,7 +241,17 @@ function generatePodcastDetailPageContent(podcast) {
                         </tbody>
                     </table>
                 </section>
-                
+            </div>
+        );
+    }
+}
+
+function generatePodcastDetailPageContent(podcastId) {
+    let content_Element = document.getElementById('content');
+    if (content_Element) {
+        ReactDOM.render(
+            <div className="container" style={{marginTop: '10px'}}>
+                <PodcastDetailContentDOM podcastId={podcastId} />
             </div>
             , content_Element
         )
@@ -166,24 +298,7 @@ function generateEpisodeDetailPageContent(episode) {
 }
 
 function fetchPodcastEpisodes(podcast_id) {
-    let requestConfig = Object.assign({}, globalRequestConfig);
-    requestConfig.headers["Content-Type"] = 'application/json';
-    requestConfig.method = 'GET';
-
-    fetch(`https://api.spotify.com/v1/shows/${podcast_id}`, requestConfig)
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else if (response.status === 401) {
-            refreshToken();
-        }
-    })
-    .then(data => {
-        generatePodcastDetailPageContent(data);
-    })
-    .catch(reason => {
-        console.log(`fetchPodcastEpisodes:\n${reason}`);
-    });
+    generatePodcastDetailPageContent(podcast_id);
 }
 
 function fetchSavedPodcasts() {

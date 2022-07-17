@@ -87,18 +87,17 @@ function fetchUserPlaylists(userId, nextPlaylistsUrl = null) {
 
 function PlaylistCardDOM(props) {
     return(
-        <div className="card card-playlist m-2" onClick={() => fetchPlaylistTracks(props.playlist.id)}>
-            <img src={props.imageUri} className="card-img-top" alt="..."/>
-            <div className="card-body">
-                <h6 className="card-title">{props.name}</h6>
-                <span className="card-subtitle mb-2 text-muted">{props.subtitle}</span>
+        <div className="card-playlist m-2" onClick={() => fetchPlaylistTracks(props.playlist.id)}>
+            <div style={{position: 'relative'}} >
+                <img src={props.imageUri} className="card-img-top card-playlist-img" alt="..."/>
+                <div className="card-cover"></div>
+                <button className="btn btn-success card-play-button" width="48px" height="48px" onClick={(e) => playEntirePlaylist(e, props.playlistUri)}>
+                    <i className="bi bi-play"></i>
+                </button>
             </div>
-            <div className="card-playlist-footer" >
-                <div className="card-playlist-footer-content">
-                    <button className="btn btn-success" width="48px" height="48px" onClick={(e) => playEntirePlaylist(e, props.playlistUri)}>
-                        <i className="bi bi-play"></i>
-                    </button>
-                </div>
+            <div className="card-body">
+                <div className="card-title">{props.name}</div>
+                <div className="card-subtitle mb-2 text-muted">{props.subtitle}</div>
             </div>
         </div>
     );
@@ -155,17 +154,95 @@ function PlaylistDetailDOM(props) {
     );
 }
 
-function generatePlaylistDetailPageContent(playlist) {
-    let trackId = 0;
-    let tracks = playlist.tracks.items.map(track => {
-            trackId++;
-            return <PlaylistDetailDOM key={trackId} playlistUri={playlist.uri} trackId={trackId} track={track.track} />
-    });
-    let content_Element = document.getElementById('content');
-    if (content_Element) {
-        ReactDOM.render(
-            <div className="container" style={{marginTop: '10px'}}>
-                <section>
+class PlaylistDetailContentDOM extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { followState: false };
+        this.playlist = this.props.playlist;
+    }
+
+    componentDidMount() {
+        this.getFollowingStatus();
+    }
+
+    getFollowingStatus() {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'GET';
+
+        fetch(`https://api.spotify.com/v1/playlists/${this.playlist.id}/followers/contains?ids=${userId}`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .then(data => {
+            if (data && data?.length > 0) {
+                this.setState({followState: data[0]});
+            }
+        })
+    }
+
+    setFollowingStatus(e) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = this.state.followState ? 'DELETE' : 'PUT';
+
+        fetch(`https://api.spotify.com/v1/playlists/${this.playlist.id}/followers`, requestConfig)
+        .then(response => {
+            if (response.ok) {
+                this.setState({followState: !this.state.followState});
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`setFollowingStatus:\n${reason}`);
+        });
+    }
+
+    playEntirePlaylist(e, playlistUri) {
+        let requestConfig = Object.assign({}, globalRequestConfig);
+        requestConfig.headers["Content-Type"] = 'application/json';
+        requestConfig.method = 'PUT';
+
+        let playlistData = {
+            context_uri: playlistUri
+        };
+        requestConfig.body = JSON.stringify(playlistData);
+
+        let currentPlayingDeviceId = '';
+        if (Devices.currentDeviceId) {
+            currentPlayingDeviceId = Devices.currentDeviceId;
+        } else {
+            currentPlayingDeviceId = Playback._deviceId;
+        }
+
+        fetch(`https://api.spotify.com/v1/me/player/play?device_id=${currentPlayingDeviceId}`, requestConfig)
+        .then(response => {
+            if (response.status == 204) {
+
+            } else if (response.status === 401) {
+                refreshToken();
+            }
+        })
+        .catch(reason => {
+            console.error(`play playlist:\n${reason}`);
+        });
+    }
+
+    render() {
+        const { playlist } = this.props;
+        let trackId = 0;
+        let tracks = playlist.tracks.items.map(track => {
+                trackId++;
+                return <PlaylistDetailDOM key={trackId} playlistUri={playlist.uri} trackId={trackId} track={track.track} />
+        });
+        return(
+            <div>
+                 <section>
                     <div className="d-flex align-items-baseline">
                         <div>
                             <img className="album-image" src={playlist.images[0]?.url}/>
@@ -179,6 +256,10 @@ function generatePlaylistDetailPageContent(playlist) {
                             </div>
                             <div className="album-date text-muted">
                                 {playlist.description}
+                            </div>
+                            <div className="album-follow d-flex">
+                                <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (this.state.followState ? 'active' : '')} onClick={(e) => this.setFollowingStatus(e)}>{this.state.followState ? 'Saved' : 'Save'}</button>
+                                <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => this.playEntirePlaylist(e, this.playlist.uri)}>Play</button>
                             </div>
                         </div>
                     </div>
@@ -208,10 +289,20 @@ function generatePlaylistDetailPageContent(playlist) {
                         </tbody>
                     </table>
                 </section>
-                
+            </div>
+        )
+    }
+}
+
+function generatePlaylistDetailPageContent(playlist) {
+    let content_Element = document.getElementById('content');
+    if (content_Element) {
+        ReactDOM.render(
+            <div className="container" style={{marginTop: '10px'}}>
+                <PlaylistDetailContentDOM playlist={playlist} />
             </div>
             , content_Element
-        )
+        );
     }
 }
 
