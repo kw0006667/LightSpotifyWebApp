@@ -15,7 +15,7 @@ function EpisodeCardDOM(props) {
     let imageUrl = episode.images[0]?.url;
 
     return(
-        <div className="card-playlist m-2" onClick={(e) => fetchArtistDetail(e, episode.id)}>
+        <div className="card-playlist m-2" onClick={() => fetchEpisodeDetail(episode.id)}>
             <div style={{position: 'relative'}}>
                 <img src={imageUrl} className="card-img-top card-playlist-img" alt="..." height="200px" width="200px" />
                 <div className="card-cover"></div>
