@@ -1,18 +1,36 @@
 {
+  "name": "next-guid",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "node app.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "axios": "^0.27.2",
+    "axios-auth-refresh": "^3.3.1",
+    "bootstrap": "^5.2.0",
+    "bootstrap-icons": "^1.9.1",
     "cookie": "^0.5.0",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "express": "^4.18.1",
-    "handlebars": "^4.7.7",
-    "querystring": "^0.2.1",
-    "request": "^2.88.2"
+    "cookies": "^0.8.0",
+    "musixmatch": "^0.1.6",
+    "next": "12.2.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "request": "^2.88.2",
+    "sass": "^1.53.0"
   },
   "devDependencies": {
-    "typescript": "^4.8.0-dev.20220618"
+    "@types/cookie": "^0.5.1",
+    "@types/cookies": "^0.7.7",
+    "@types/node": "18.0.6",
+    "@types/react": "18.0.15",
+    "@types/react-dom": "18.0.6",
+    "@types/request": "^2.48.8",
+    "eslint": "8.20.0",
+    "eslint-config-next": "12.2.2",
+    "typescript": "4.7.4"
   }
 }
