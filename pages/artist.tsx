@@ -65,9 +65,19 @@ const ArtistPage: NextPage<ArtistProps> = (props: ArtistProps) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const { req, res } = context;
+    const token = req.cookies.access_token;
+    if (!token) {
+        return {
+            redirect: {
+                permanent: false,
+                destination: '/'
+            }
+        };
+    }
+
     return {
         props: {
-            access_token: req.cookies.access_token
+            access_token: token
         }
     };
 }
