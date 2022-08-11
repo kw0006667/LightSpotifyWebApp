@@ -6,7 +6,6 @@ import axiosInstance from "../utilities/axios-instance";
 import TrackLinkDOM from "./tracklink";
 import Link from "next/link";
 import { SpotifyUtils } from "../utilities/spotifyutils";
-import Musixmatch, { TrackSearchParams } from "musixmatch"
 import { Device } from "../types";
 import LikeDOM from "./like";
 
@@ -293,35 +292,6 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
         });
     }
 
-    showLyric() {
-        let apiKey = "8843b595a4de93cdde9ab2ee98fdf528";
-        let searchTrack = "Blank Space";
-        let searchArtist = "Taylor Swift";
-        let requestConfig = {
-            url: `https://cors-anywhere.herokuapp.com/https://api.musixmatch.com/ws/1.1/matcher.track.get?apikey=${apiKey}&format=json&domain=localhost:3000&q_track=${encodeURIComponent(searchTrack)}&q_artist=${encodeURIComponent(searchArtist)}&f_has_lyrics=1`
-        };
-        // axiosInstance.request(requestConfig)
-        // .then(response => {
-        //     console.log(response.data);
-        // })
-        const msx = new Musixmatch({apikey: '8843b595a4de93cdde9ab2ee98fdf528'});
-        const searchString: TrackSearchParams = {
-            q: searchTrack,
-            // f_has_lyrics: 1,
-            f_lyrics_language: 'en',
-            // f_artist_id: 1299
-        };
-        // msx.trackSearch(searchString)
-        // .then(data => {
-        //     console.log(data);
-        // });
-
-        msx.artistSearch({q_artist: searchArtist})
-        .then(data => {
-            console.log(data);
-        })
-    }
-
     openAllDevicesList(event: React.MouseEvent<HTMLAnchorElement>) {
         let requestConfig = {
             url: `https://api.spotify.com/v1/me/player`,
@@ -394,6 +364,12 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
         this.state.player?.setVolume(volumeValue / 100).then(() => {
             console.log('Volume Adjusted');
         });
+    }
+
+    updateSeekPosition(event: React.MouseEvent<HTMLInputElement>) {
+        const element = event.currentTarget;
+        const value = element.value;
+        console.log(value);
     }
 
     static getContextLink(contextUri: string | undefined | null): string {
@@ -528,7 +504,7 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
                     {/* <!-- Progress bar --> */}
                     <div className="d-flex justify-content-center my-2">
                     <sub id="trackPosition">{SpotifyUtils.CovertDurationToTime(this.state.position)}</sub>
-                    <input type="range" className="volume-slider mx-2" id="seekSlider" style={{backgroundImage: `linear-gradient(to right, #198754 0%, #198754 ${this.state.progress}%, #e2e2e2 ${this.state.progress}%, #e2e2e2 100%)`, width: "500px"}} min="0" max="100" value={this.state.progress} data-start="false" />
+                    <input type="range" className="volume-slider mx-2" id="seekSlider" style={{backgroundImage: `linear-gradient(to right, #198754 0%, #198754 ${this.state.progress}%, #e2e2e2 ${this.state.progress}%, #e2e2e2 100%)`, width: "500px"}} min="0" max="100" value={this.state.progress} data-start="false" onMouseDown={() => {}} onMouseMove={(e) => {this.updateSeekPosition(e)}}/>
                     <sub id="trackDuration">{SpotifyUtils.CovertDurationToTime(this.state.currentState?.duration)}</sub>
                     </div>
 

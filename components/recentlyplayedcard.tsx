@@ -22,7 +22,7 @@ function RecentlyPlayedCardDOM(props: Props) {
     
     useEffect(() => {
         setLoading(true);
-        let contextLink = SpotifyUtils.getContextLink(props.context.uri);
+        let contextLink = SpotifyUtils.getContextLink(props.context?.uri ?? props.track.album.uri);
         let requestConfig = {
         url: `https://api.spotify.com/v1${contextLink}`,
         headers: {
@@ -49,7 +49,7 @@ function RecentlyPlayedCardDOM(props: Props) {
           }
         }
       });
-    }, [props.context.uri]);
+    }, []);
 
     // let imageUrl = track.album.images[0].url
     // let artists = track.artists.map(artist => {

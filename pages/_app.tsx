@@ -8,14 +8,23 @@ import { GetServerSideProps } from 'next'
 import WebPlayback from '../components/webplayback'
 import AuthInstance from '../utilities/auth-instance'
 import Link from 'next/link'
+import { SWRConfig } from "swr";
+import { AxiosRequestConfig } from 'axios'
+import axiosInstance from '../utilities/axios-instance'
 
 const instance = AuthInstance;
 
 function MyApp({ Component, pageProps }: AppProps) {
   return(
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+    <SWRConfig
+      value={{ 
+        revalidateOnFocus: false,
+        fetcher: (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data)
+        }}>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </SWRConfig>
   );
 }
 

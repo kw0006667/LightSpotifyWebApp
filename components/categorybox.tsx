@@ -30,8 +30,8 @@ function CategoryBoxDOM(props: CategoryBoxProps) {
     }
 
     return(
-        <div className="category-box" style={{cursor: 'pointer'}} onClick={(e) => navigateToCategoryDetailPage(e, props.category.id)}>
-            <Image src={props.category.icons[0]?.url} alt={props.category.name} width="128" height="128" />
+        <div className="category-box" style={{ backgroundImage: `url(${props.category.icons[0]?.url}) `}} onClick={(e) => navigateToCategoryDetailPage(e, props.category.id)}>
+            {/* <Image src={props.category.icons[0]?.url} alt={props.category.name} width="128" height="128" /> */}
             <div className="category-box-name">
                 <span>{props.category.name}</span>
             </div>

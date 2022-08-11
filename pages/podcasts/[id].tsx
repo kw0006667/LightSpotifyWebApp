@@ -1,53 +1,56 @@
-import { GetServerSideProps } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import Image from "next/future/image";
 import { useRouter, withRouter, NextRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import useSWR from "swr";
 import PodcastEpisodeDOM from "../../components/podcastepisode";
 import PodcastLinkDOM from "../../components/podcastlink";
-import { Podcast } from "../../types";
+import { AxiosRequestConfig, Podcast } from "../../types";
 import Authorization from "../../utilities/auth";
 import axiosInstance from "../../utilities/axios-instance";
 
-interface RouterProps {
-    router: NextRouter
-}
 
-interface PodcastDetailProps extends RouterProps {
+interface PodcastDetailProps {
     access_token: string
 }
 
 type PodcastDetailState = {
-    saveState: boolean,
-    podcast: Podcast | undefined,
-    podcastId: string | string[] | undefined,
-    isLoading: boolean
+    podcast: Podcast | undefined
 };
 
-class PodcastDetail extends React.Component<PodcastDetailProps, PodcastDetailState> {
+const usePodcastDetail = (requestConfig: AxiosRequestConfig, id: string | string[] | undefined): PodcastDetailState => {
+    let request = Object.assign({}, requestConfig);
+    request.url = `https://api.spotify.com/v1/shows/${id}`;
+    const { data } = useSWR(request);
 
-    constructor(props: PodcastDetailProps) {
-        super(props);
-        this.state = {
-            podcast: undefined,
-            saveState: false,
-            isLoading: false,
-            podcastId: this.props.router.query.id
-        };
-    }
+    return {
+        podcast: data
+    };
+}
 
-    componentDidMount() {
-        this.setState({
-            isLoading: true
-        });
-        this.fetchPodcastDetail();
-        this.getSaveStatus();
-    }
+const PodcastDetail: NextPage<PodcastDetailProps> = (props: PodcastDetailProps) => {
+    const id = useRouter().query.id;
+    const requestConfig = {
+        url: "",
+        headers: {
+            'Authorization': 'Bearer ' + props.access_token,
+            'Content-Type': 'application/json'
+        },
+        method: 'GET'
+    };
 
-    fetchPodcastDetail() {
+    const { podcast } = usePodcastDetail(requestConfig, id);
+    const [saveState, setSaveState] = useState(false);
+
+    useEffect(() => {
+        getSaveStatus();
+    }, [id]);
+
+    const getSaveStatus = () => {
         let requestConfig = {
-            url: `https://api.spotify.com/v1/shows/${this.state.podcastId}`,
+            url: `https://api.spotify.com/v1/me/shows/contains?ids=${id}`,
             headers: {
-                'Authorization': 'Bearer ' + this.props.access_token,
+                'Authorization': 'Bearer ' + props.access_token,
                 'Content-Type': 'application/json'
             },
             method: 'GET'
@@ -55,113 +58,87 @@ class PodcastDetail extends React.Component<PodcastDetailProps, PodcastDetailSta
 
         axiosInstance.request(requestConfig)
         .then(response => {
-            this.setState({
-                podcast: response.data,
-                isLoading: false
-            });
-        })
-    }
-
-    getSaveStatus() {
-        let requestConfig = {
-            url: `https://api.spotify.com/v1/me/shows/contains?ids=${this.state.podcastId}`,
-            headers: {
-                'Authorization': 'Bearer ' + this.props.access_token,
-                'Content-Type': 'application/json'
-            },
-            method: 'GET'
-        };
-
-        axiosInstance.request(requestConfig)
-        .then(response => {
-            this.setState({
-                saveState: response.data[0]
-            });
+            setSaveState(response.data[0]);
         });
     }
 
-    setSaveStatus = () => {
+    const setSaveStatus = () => {
         let requestConfig = {
-            url: `https://api.spotify.com/v1/me/shows?ids=${this.state.podcastId}`,
+            url: `https://api.spotify.com/v1/me/shows?ids=${id}`,
             headers: {
-                'Authorization': 'Bearer ' + this.props.access_token,
+                'Authorization': 'Bearer ' + props.access_token,
                 'Content-Type': 'application/json'
             },
-            method: this.state.saveState ? 'DELETE' : 'PUT'
+            method: saveState ? 'DELETE' : 'PUT'
         };
         
         axiosInstance.request(requestConfig)
-        .then(resposne => {
-            this.setState({
-                saveState: !this.state.saveState
-            });
+        .then(response => {
+            if (response.status === 204) {
+                setSaveState(!saveState);
+            }
         });
     };
 
-    playEntirePodcast = (event: React.MouseEvent<HTMLButtonElement>, podcast_uri: string | undefined) => {
+    const playEntirePodcast = (event: React.MouseEvent<HTMLButtonElement>, podcast_uri: string | undefined) => {
 
     };
 
-    render() {
-        if (this.state.isLoading) {
-            return(
-                <div className="text-center">
-                    <div className="spinner-border" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            );
-        }
-        if (!this.state.podcast) {
-            return (<div>{`No data enough`}</div>);
-        }
-    
-        let episodes = this.state.podcast.episodes.items.map(episode => 
-            <PodcastEpisodeDOM key={episode.id} episode={episode} podcast={this.state.podcast} />
-        );
-    
+    if (!podcast) {
         return(
-            <main>
-                <div className="container maincontainer scrollarea">
-                <section>
-                        <div className="d-flex align-items-center">
-                            <div>
-                                <Image className="album-image" src={this.state.podcast.images[0].url} alt={"..."} width="256" height="256"/>
-                            </div>
-                            <div className="album-title">
-                                <div className="album-name">
-                                    {this.state.podcast.name}
-                                </div>
-                                <div className="album-artist">
-                                    <PodcastLinkDOM podcast={this.state.podcast} />
-                                </div>
-                                <div className="album-date text-muted">
-                                    {this.state.podcast.description}
-                                </div>
-                                <div className="album-follow d-flex">
-                                    <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (this.state.saveState ? 'active' : '')} onClick={() => this.setSaveStatus()}>{this.state.saveState ? 'Saved' : 'Save'}</button>
-                                    <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => this.playEntirePodcast(e, this.state.podcast?.uri)}>Play</button>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                    <section>
-                        <table className="table table-hover align-middle album-table">
-                            <colgroup>
-                                <col span={1} style={{width:'5%'}}/>
-                                <col span={1} style={{width:'85%'}}/>
-                                <col span={1} style={{width:'10%'}}/>
-                                <col span={1} style={{width:'5%'}}/>
-                            </colgroup>
-                            <tbody>
-                                {episodes}
-                            </tbody>
-                        </table>
-                    </section>
+            <div className="text-center">
+                <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
                 </div>
-            </main>
+            </div>
         );
     }
+
+    let episodes = podcast.episodes.items.map(episode => 
+        <PodcastEpisodeDOM key={episode.id} episode={episode} podcast={podcast} />
+    );
+
+    return(
+        <main>
+            <div className="container maincontainer scrollarea">
+            <section>
+                    <div className="d-flex align-items-center">
+                        <div>
+                            <Image className="album-image" src={podcast.images[0].url} alt={"..."} width="256" height="256"/>
+                        </div>
+                        <div className="album-title">
+                            <div className="album-name">
+                                {podcast.name}
+                            </div>
+                            <div className="album-artist">
+                                <PodcastLinkDOM podcast={podcast} />
+                            </div>
+                            <div className="album-date text-muted">
+                                {podcast.description}
+                            </div>
+                            <div className="album-follow d-flex">
+                                <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (saveState ? 'active' : '')} onClick={() => setSaveStatus()}>{saveState ? 'Saved' : 'Save'}</button>
+                                {/* <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => playEntirePodcast(e, podcast.uri)}>Play</button> */}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <table className="table table-hover align-middle album-table">
+                        <colgroup>
+                            <col span={1} style={{width:'5%'}}/>
+                            <col span={1} style={{width:'85%'}}/>
+                            <col span={1} style={{width:'10%'}}/>
+                            <col span={1} style={{width:'5%'}}/>
+                        </colgroup>
+                        <tbody>
+                            {episodes}
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        </main>
+    );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -174,4 +151,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 }
 
 // export default PodcastDetail;
-export default withRouter(PodcastDetail);
+export default PodcastDetail;

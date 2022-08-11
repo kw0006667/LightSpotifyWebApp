@@ -1,8 +1,10 @@
-import { GetServerSideProps } from "next";
-import React from "react";
+import { AxiosRequestConfig } from "axios";
+import { GetServerSideProps, NextPage } from "next";
+import React, { useEffect, useState } from "react";
 import PodcastCardDOM from "../components/podcastcard";
 import { PodcastResult } from "../types";
 import axiosInstance from "../utilities/axios-instance";
+import useSWR from "swr";
 
 type PodcastProps = {
     access_token: string
@@ -13,71 +15,56 @@ type PodcastState = {
     isLoading: boolean
 };
 
-class PodcastPage extends React.Component<PodcastProps, PodcastState> {
-    constructor(props: PodcastProps) {
-        super(props);
-        this.state = {
-            podcastsResult: undefined,
-            isLoading: false
-        };
-    }
+const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
 
-    componentDidMount() {
-        this.setState({
-            isLoading: true
-        });
-        this.fetchPodcasts();
-    }
+const usePodcastsResult = (access_token: string): PodcastState => {
+    const requestConfig = {
+        url: 'https://api.spotify.com/v1/me/shows?limit=50',
+        headers: {
+            'Authorization': 'Bearer ' + access_token,
+            'Content-Type': 'application/json'
+        },
+        method: 'GET'
+    };
+    const { data, error } = useSWR(requestConfig, fetcher);
 
-    fetchPodcasts() {
-        let requestConfig = {
-            url: 'https://api.spotify.com/v1/me/shows?limit=50',
-            headers: {
-                'Authorization': 'Bearer ' + this.props.access_token,
-                'Content-Type': 'application/json'
-            },
-            method: 'GET'
-        };
-        
-        axiosInstance.request(requestConfig)
-        .then(response => {
-            this.setState({
-                podcastsResult: response.data,
-                isLoading: false
-            });
-        });
+    return {
+        podcastsResult: data,
+        isLoading: !error && !data
     }
+}
+
+const PodcastPage: NextPage<PodcastProps> = (props: PodcastProps) => {
+    const { podcastsResult, isLoading } = usePodcastsResult(props.access_token);
     
-    render() {
-        if (this.state.isLoading) {
-            return(
-                <main>
-                    <div className='container maincontainer scrollarea'>
-                        <div className="text-center">
-                            <div className="spinner-border" role="status">
-                                <span className="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            );
-        }
-        if (!this.state.podcastsResult) {
-            return <p>No enough data</p>
-        }
-    
+    if (isLoading) {
         return(
             <main>
                 <div className='container maincontainer scrollarea'>
-                    <div className="d-flex flex-wrap">
-                {this.state.podcastsResult?.items.map(item => {
-                    return(<PodcastCardDOM key={item.show.id} podcast={item.show}/>);
-                })}
-            </div>
+                    <div className="text-center">
+                        <div className="spinner-border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
                 </div>
             </main>
         );
     }
+    if (!podcastsResult) {
+        return <p>No enough data</p>
+    }
+
+    return(
+        <main>
+            <div className='container maincontainer scrollarea'>
+                <div className="d-flex flex-wrap">
+            {podcastsResult?.items.map(item => {
+                return(<PodcastCardDOM key={item.show.id} podcast={item.show}/>);
+            })}
+        </div>
+            </div>
+        </main>
+    );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

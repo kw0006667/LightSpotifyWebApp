@@ -1,6 +1,7 @@
 import { GetServerSideProps } from "next";
 import Image from "next/future/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import AuthInstance from "../utilities/auth-instance";
 import Footer from "./footer";
 
@@ -10,6 +11,20 @@ interface LayoutProps {
 
 function Layout({children}: LayoutProps) {
     const userIconUrl = AuthInstance.personalData?.images?.at(0)?.url ?? "/Spotify_Icon_RGB_Black.png";
+    const router = useRouter();
+
+    const previousPage = () => {
+        // router.back();
+        if (window) {
+            window.history.back();
+        }
+    }
+
+    const nextPage = () => {
+        if (window) {
+            window.history.forward();
+        }
+    }
 
     return(
         <>
@@ -26,12 +41,12 @@ function Layout({children}: LayoutProps) {
 
                     <div className="mx-2" >
                         <Link href="#">
-                            <a>
+                            <a onClick={() => {previousPage()}}>
                                 <i className="bi bi-chevron-left"></i>
                             </a>
                         </Link>
                         <Link href="#">
-                            <a>
+                            <a onClick={() => {nextPage()}}>
                                 <i className="bi bi-chevron-right"></i>
                             </a>
                         </Link>

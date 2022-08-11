@@ -14,7 +14,9 @@ const nextConfig = {
       "scontent-iad3-1.xx.fbcdn.net",
       "charts-images.scdn.co",
       "scontent-ord5-1.xx.fbcdn.net",
-      "scontent-ort2-1.xx.fbcdn.net"],
+      "scontent-ort2-1.xx.fbcdn.net",
+      "scontent-ort2-2.xx.fbcdn.net",
+      "scontent-atl3-1.xx.fbcdn.net"],
   },
   experimental: {
     images: {

@@ -144,8 +144,12 @@
 }
 
 .category-box {
+    width: 128px;
+    height: 128px;
     margin: 7px;
     position:relative;
+    cursor: pointer;
+    background-size: cover;
 }
 .category-box:hover .category-box-name{
     backdrop-filter: blur(8px);
@@ -159,14 +163,18 @@
     height: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     color: white;
     bottom: 0;
     font-size: 14px;
     font-weight: bold;
     backdrop-filter: blur(0);
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.1s, backdrop-filter 0.1s ease-out;
+
+    span {
+        margin-bottom: 5px;
+    }
 }
 
 .playing-info {

@@ -3,6 +3,7 @@ import React from "react";
 import { Episode, Podcast } from "../types";
 import AuthInstance from "../utilities/auth-instance";
 import axiosInstance from "../utilities/axios-instance";
+import { SpotifyUtils } from "../utilities/spotifyutils";
 
 interface PodcastEpisodeProps {
     episode: Episode,
@@ -50,7 +51,7 @@ function PodcastEpisodeDOM(props: PodcastEpisodeProps) {
                     <p className="podcast-table-des">{props.episode.description}</p>
                 </div>
             </td>
-            <td>{new Date(props.episode.duration_ms).toISOString().slice(14,19)}</td>
+            <td>{SpotifyUtils.CovertDurationToTime(props.episode.duration_ms)}</td>
             <td>{'...'}</td>
         </tr>
     );

@@ -9,7 +9,7 @@ function LikeDOM(props: {track: Spotify.Track | Track | undefined}) {
 
     useEffect(() => {
         let requestConfig = {
-            url: `https://api.spotify.com/v1/me/tracks/contains?ids=${props.track?.id}`,
+            url: `https://api.spotify.com/v1/me/${props.track?.type}s/contains?ids=${props.track?.id}`,
             headers: {
                 'Authorization': 'Bearer ' + AuthInstance.access_token,
                 'Content-Type': 'application/json'
@@ -26,7 +26,7 @@ function LikeDOM(props: {track: Spotify.Track | Track | undefined}) {
 
     const LikeTrack = () => {
         let requestConfig = {
-            url: `https://api.spotify.com/v1/me/tracks?ids=${props.track?.id}`,
+            url: `https://api.spotify.com/v1/me/${props.track?.type}s?ids=${props.track?.id}`,
             headers: {
                 'Authorization': 'Bearer ' + AuthInstance.access_token,
                 'Content-Type': 'application/json'

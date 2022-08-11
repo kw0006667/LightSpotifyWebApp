@@ -1,4 +1,12 @@
-import { InferGetStaticPropsType } from "next";
+
+export type AxiosRequestConfig = {
+    url: string,
+    headers: {
+        Authorization: string;
+        'Content-Type': string;
+    };
+    method: string;
+}
 
 export interface GetRecentlyPlayedResults {
     info: RecentlyPlayedInfo;

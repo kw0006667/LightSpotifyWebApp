@@ -1,9 +1,11 @@
 export namespace SpotifyUtils {
     export function CovertDurationToTime(duration_ms: number | undefined): string {
-        if (duration_ms)
-            return new Date(duration_ms).toISOString().slice(14, 19);
-        else 
+        if (!duration_ms)
             return '00:00';
+        
+        let duration = new Date(duration_ms).toISOString();
+        const offset = duration.at(11) !== "0" || duration.at(12) !== "0" ? -3 : 0;
+        return duration.slice(14 + offset, 19);
     }
 
     export function GetPercentageProgress(position: number | undefined, duration_ms: number | undefined) {

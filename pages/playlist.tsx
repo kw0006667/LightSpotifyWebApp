@@ -1,9 +1,11 @@
+import { AxiosRequestConfig } from "axios";
 import { GetServerSideProps, GetStaticProps, NextPage, NextPageContext } from "next";
 import React, { useEffect, useState } from "react";
 import PlaylistCardDOM from "../components/playlistcard";
 import { PersonalData, Playlist, Playlists } from "../types";
 import AuthInstance from "../utilities/auth-instance";
 import axiosInstance from "../utilities/axios-instance";
+import useSWR from "swr";
 
 type PlaylistProps = {
     access_token: string
@@ -14,72 +16,53 @@ type PlaylistState = {
     isLoading: boolean
 };
 
-class PlaylistPage extends React.Component<PlaylistProps, PlaylistState> {
-    constructor(props: PlaylistProps) {
-        super(props);
-        this.state = {
-            playlists: undefined,
-            isLoading: false
-        };
-    }
+const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
 
-    componentDidMount() {
-        this.setState({
-            isLoading: true
-        });
+const usePlaylistsResult = (access_token: string): {playlists: Playlist[] | undefined} => {
+    const requestConfig = {
+        url: `https://api.spotify.com/v1/me/playlists?limit=50`,
+        headers: {
+            'Authorization': 'Bearer ' + access_token,
+            'Content-Type': 'application/json'
+        },
+        method: 'GET'
+    };
 
-        this.fetchPlaylists();
-    }
+    const { data, error } = useSWR(requestConfig, fetcher);
 
-    fetchPlaylists() {
-        let requestConfig = {
-            url: `https://api.spotify.com/v1/me/playlists?limit=50`,
-            headers: {
-                'Authorization': 'Bearer ' + this.props.access_token,
-                'Content-Type': 'application/json'
-            },
-            method: 'GET'
-        };
-        
-        axiosInstance.request(requestConfig)
-        .then(response => {
-            this.setState({
-                playlists: response.data.items,
-                isLoading: false
-            });
-        });
-    }
+    return {
+        playlists: data?.items
+    };
+}
 
-    render() {
-        if (this.state.isLoading) {
-            return(
-                <main>
-                    <div className='container maincontainer scrollarea'>
-                        <div className="text-center">
-                            <div className="spinner-border" role="status">
-                                <span className="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            );
-        }
-        if (!this.state.playlists) {
-            return <p>No enough data</p>
-        }
-        
+const PlaylistPage: NextPage<PlaylistProps> = (props: PlaylistProps) => {
+    const { playlists } = usePlaylistsResult(props.access_token);
+
+    if (!playlists) {
         return(
             <main>
                 <div className='container maincontainer scrollarea'>
-                    <div className="d-flex flex-wrap">
-                        {this.state.playlists.map(playlist => {
-                            return( <PlaylistCardDOM key={playlist.id} playlist={playlist} />);
-                        })}
+                    <div className="text-center">
+                        <div className="spinner-border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </main>
-        );
+          );
     }
+
+    return(
+        <main>
+            <div className='container maincontainer scrollarea'>
+                <div className="d-flex flex-wrap">
+                    {playlists?.map(playlist => {
+                        return( <PlaylistCardDOM key={playlist.id} playlist={playlist} />);
+                    })}
+                </div>
+            </div>
+        </main>
+    );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
