@@ -1,0 +1,45 @@
+{
+    "name": "@types/spotify-web-playback-sdk",
+    "version": "0.1.12",
+    "description": "TypeScript definitions for spotify-web-playback-sdk",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/spotify-web-playback-sdk",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Festify Dev Team",
+            "url": "https://github.com/Festify",
+            "githubUsername": "Festify"
+        },
+        {
+            "name": "Marcus Weiner",
+            "url": "https://github.com/mraerino",
+            "githubUsername": "mraerino"
+        },
+        {
+            "name": "Moritz Gunz",
+            "url": "https://github.com/NeoLegends",
+            "githubUsername": "NeoLegends"
+        },
+        {
+            "name": "Daniel Almaguer",
+            "url": "https://github.com/deini",
+            "githubUsername": "deini"
+        },
+        {
+            "name": "Hanna Becker",
+            "url": "https://github.com/hanna-becker",
+            "githubUsername": "hanna-becker"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/spotify-web-playback-sdk"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "647618638f846ad0b1806f5ec70176df9fa324471ac2daed18c64034009fceee",
+    "typeScriptVersion": "3.7"
+}
