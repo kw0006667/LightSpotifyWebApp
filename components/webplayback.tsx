@@ -8,6 +8,8 @@ import Link from "next/link";
 import { SpotifyUtils } from "../utilities/spotifyutils";
 import { Device } from "../types";
 import LikeDOM from "./like";
+import useSWR from "swr";
+import DeviceItemDOM from "./deviceitem";
 
 interface IWebPlaybackProps {
     access_token: string
@@ -36,6 +38,23 @@ interface IWebPlaybackState {
 */
 const RepeatState = ["off", "context", "track"];
 
+const useDevices = (access_token: string | string[] | undefined): { devices: Device[] | undefined } => {
+    const requestConfig = {
+        url: `https://api.spotify.com/v1/me/player/devices`,
+        headers: {
+            'Authorization': 'Bearer ' + access_token,
+            'Content-Type': 'application/json'
+        },
+        method: 'GET'
+    };
+
+    const { data } = useSWR(requestConfig);
+
+    return {
+        devices: data.devices
+    };
+}
+
 class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> {
     constructor(props: IWebPlaybackProps) {
         super(props);
@@ -54,6 +73,7 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
             progress: 0,
             volume: 50
         };
+
         setInterval(() => {this.updateCurrentInfo();}, this.updateStatusInterval);
     }
 
@@ -293,6 +313,40 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
     }
 
     openAllDevicesList(event: React.MouseEvent<HTMLAnchorElement>) {
+        // let requestConfig = {
+        //     url: `https://api.spotify.com/v1/me/player`,
+        //     headers: {
+        //         'Authorization': 'Bearer ' + AuthInstance.access_token,
+        //         'Content-Type': 'application/json'
+        //     },
+        //     method: 'PUT',
+        //     data: JSON.stringify({
+        //         device_ids: [this.state.deviceId]
+        //     })
+        // };
+    
+        // axiosInstance.request(requestConfig)
+        // .then(response => {
+        //     if (response.status === 202) {
+        //         console.log('Play Playlist');
+        //         this.state.player?.activateElement();
+        //     }
+        // });
+        let allDeviceList_Element = document.getElementById('allDeviceList');
+        if (!allDeviceList_Element)
+            return;
+
+        this.fetchAllDevices();
+
+        const visibleClassName = 'connect-device-list-container-visible';
+        if (allDeviceList_Element.classList.contains(visibleClassName)) {
+            allDeviceList_Element.classList.remove(visibleClassName);
+        } else {
+            allDeviceList_Element.classList.add(visibleClassName);
+        }
+    }
+
+    transferPlayDevice(event: React.MouseEvent<HTMLAnchorElement>, id: string) {
         let requestConfig = {
             url: `https://api.spotify.com/v1/me/player`,
             headers: {
@@ -301,7 +355,7 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
             },
             method: 'PUT',
             data: JSON.stringify({
-                device_ids: [this.state.deviceId]
+                device_ids: [id]
             })
         };
     
@@ -441,6 +495,17 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
         }
     }
 
+    getCurrentPlayingDeviceInfo() {
+        let playingInfo = "Pick a device to play";
+        this.state.devices?.forEach(device => {
+            if (device.is_active) {
+                playingInfo = device.id === this.state.deviceId ? 'Listening on the local device' : `Listening on ${device.name}`;
+            }
+        });
+
+        return playingInfo;
+    }
+
     render() {
         let artists = null;
         if (this.state.currentTrack?.type === 'track') {
@@ -512,22 +577,28 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
                     <div id="remoteConnectState" className="d-flex aligh-items-center justify-content-center" style={{marginTop: "5px", color: "#2d921a", alignItems: "center"}}>
                     <a id="remoteContectStateBtn" href="#" className="d-inline-flex text-decoration-none rounded" data-bs-toggle="popover" data-bs-placement="top" title="Popover title" onClick={(e) => {this.openAllDevicesList(e)}}>
                         <i className="bi bi-speaker"></i>
-                        <span className="mx-2" style={{fontSize: "small"}}>{`Listening on Tim's MacBook Pro`}</span>
+                        <span className="mx-2" style={{fontSize: "small"}}>{this.getCurrentPlayingDeviceInfo()}</span>
                     </a>
                     <div id="allDeviceList" className="connect-device-list-container">
                         <div style={{textAlign: "left", color: "#4a4a4a", paddingLeft: "8px"}}>
                         <h6>Connect to a device</h6>
                         </div>
-                        <div id="hiddenPopoverContent" className="list-group w-auto"></div>
+                        <div id="hiddenPopoverContent" className="list-group w-auto">
+                            {this.state.devices?.map(device => {
+                                return(
+                                    <DeviceItemDOM key={device.id} device={device} callback={this.transferPlayDevice.bind(this)} />
+                                );
+                            })}
+                        </div>
                     </div>
                     </div>
                 </div>
 
                 <div className="footer-right">
                     <div>
-                    {/* <!-- <a href="#" className="d-inline-flex text-decoration-none rounded">
+                    {/* <a href="#" className="d-inline-flex text-decoration-none rounded">
                         <i className="bi bi-volume-down"></i>
-                    </a> --> */}
+                    </a> */}
                     <input type="range" className="volume-slider" id="volumeSlider" style={{backgroundImage: `linear-gradient(to right, #198754 0%, #198754 ${this.state.volume}%, #e2e2e2 ${this.state.volume}%, #e2e2e2 100%)`}} min="0" max="100" defaultValue={50} data-start="false" onMouseDown={ (e) => this.onMouseDown(e)} onMouseMove={(e) => this.onMouseMove(e)} onMouseUp={(e) => this.onMouseUp(e)}/>
                     </div>
                 </div> 

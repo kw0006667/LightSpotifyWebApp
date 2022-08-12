@@ -239,6 +239,7 @@ const ArtistDetail: NextPage<ArtistDetailProps> = (props: ArtistDetailProps) => 
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+    const instance = AuthInstance;
     const { req, res } = context;
     const token = req.cookies.access_token;
     if (!token) {

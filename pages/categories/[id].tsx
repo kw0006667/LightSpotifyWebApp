@@ -5,6 +5,7 @@ import React from "react";
 import useSWR from "swr";
 import PlaylistCardDOM from "../../components/playlistcard";
 import { AxiosRequestConfig, Playlist } from "../../types";
+import AuthInstance from "../../utilities/auth-instance";
 import axiosInstance from "../../utilities/axios-instance";
 
 interface ICategoryDetailProps {
@@ -17,7 +18,7 @@ interface ICategoryDetailState {
 
 const useCategoryDetail = (requestConfig: AxiosRequestConfig, id: string | string[] | undefined): ICategoryDetailState => {
     let request = Object.assign({}, requestConfig);
-    request.url = `https://api.spotify.com/v1/browse/categories/${id}/playlists`;
+    request.url = `https://api.spotify.com/v1/browse/categories/${id}/playlists?country=${AuthInstance.personalData?.country}&offset=0&limit=20`;
     const { data } = useSWR(request);
 
     return {

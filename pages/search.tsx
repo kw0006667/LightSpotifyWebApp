@@ -6,6 +6,7 @@ import { ISearchResult, Category} from "../types";
 import axiosInstance from "../utilities/axios-instance";
 import useSWR from "swr";
 import { AxiosRequestConfig } from "axios";
+import AuthInstance from "../utilities/auth-instance";
 
 interface ISearchProps {
     access_token: string
@@ -26,7 +27,7 @@ const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(confi
 
 const useCategories = (access_token: string): CategoriesResult => {
     const requestConfig = {
-        url: `https://api.spotify.com/v1/browse/categories?limit=50`,
+        url: `https://api.spotify.com/v1/browse/categories?country=${AuthInstance.personalData?.country}&offset=0&limit=50`,
         headers: {
             'Authorization': 'Bearer ' + access_token,
             'Content-Type': 'application/json'
