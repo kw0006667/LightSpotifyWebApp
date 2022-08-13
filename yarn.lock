@@ -229,6 +229,11 @@
     "@types/mime" "^1"
     "@types/node" "*"
 
+"@types/spotify-web-playback-sdk@^0.1.12":
+  "integrity" "sha512-qlKVNdHiQLSztUoMTz7Zo8Dxmzcd1k89Ct2XsNMVl8BfCzotovae/hSLvHPoua/N8i592LZ1q0SsgtQH6JT+vA=="
+  "resolved" "https://registry.npmjs.org/@types/spotify-web-playback-sdk/-/spotify-web-playback-sdk-0.1.12.tgz"
+  "version" "0.1.12"
+
 "@types/tough-cookie@*":
   "integrity" "sha512-Q5vtl1W5ue16D+nIaW8JWebSSraJVlK+EthKn7e7UcD4KWsaSJ8BqGPXNaPghgtcn/fhvrN17Tv8ksUsQpiplw=="
   "resolved" "https://registry.npmjs.org/@types/tough-cookie/-/tough-cookie-4.0.2.tgz"

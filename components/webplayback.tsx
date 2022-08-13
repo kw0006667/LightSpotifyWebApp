@@ -507,14 +507,12 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
     }
 
     render() {
-        let artists = null;
-        if (this.state.currentTrack?.type === 'track') {
-            artists = this.state.currentTrack?.artists.map(artist => {
-                return( <this.ArtistInfoLinkDOM key={artist.uri} artistUri={artist.uri} artistName={artist.name}>{', '}</this.ArtistInfoLinkDOM>);
-            });
-        } else {
-            artists = this.state.currentTrack?.album.name;
-        }
+        let artists = this.state.currentTrack?.type === 'track' 
+                ? this.state.currentTrack?.artists.map(artist => {
+                    return( <this.ArtistInfoLinkDOM key={artist.uri} artistUri={artist.uri} artistName={artist.name}>{', '}</this.ArtistInfoLinkDOM>);
+                })
+                : this.state.currentTrack?.album.name;
+
         return(
             <>
                 <div className="d-flex footer-left">
