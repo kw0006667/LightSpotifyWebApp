@@ -6,7 +6,6 @@ import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import bootstrap from "bootstrap";
 import AlbumCardDOM from "../../components/albumcard";
-import AllAlbumsModalDOM from "../../components/allalbumsmodal";
 import ArtistCardDOM from "../../components/artistcard";
 import ArtistTopTracksDOM from "../../components/artisttoptrack";
 import { Album, Artist, AxiosRequestConfig, Track } from "../../types";
@@ -236,7 +235,6 @@ const ArtistDetail: NextPage<ArtistDetailProps> = (props: ArtistDetailProps) => 
                     </section>
                 </div>
             </div>
-            <AllAlbumsModalDOM albums={recentlyAlbums} artist={artist} />
         </main>
     );
 }

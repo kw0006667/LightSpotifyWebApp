@@ -1,7 +1,6 @@
 import Image from "next/future/image";
 import { useRouter } from "next/router";
 import React from "react";
-import bootstrap from "bootstrap";
 import { Album } from "../types";
 import AuthInstance from "../utilities/auth-instance";
 import axiosInstance from "../utilities/axios-instance";
@@ -11,8 +10,6 @@ import ArtistLinkDOM from "./atistlink";
 function AlbumCardDOM(props: { album: Album}) {
     const router = useRouter();
     const navigateToAlbumDetail = (event: React.MouseEvent<HTMLDivElement>, album_id: string) => {
-        // const allAlbumModal = new bootstrap.modal("#allAlbumModal");
-        // allAlbumModal.hide();
         router.push(`/albums/${props.album.id}`);
     }
 
