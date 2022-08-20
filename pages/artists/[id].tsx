@@ -4,6 +4,7 @@ import Link from "next/link";
 import { NextRouter, useRouter, withRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
+import bootstrap from "bootstrap";
 import AlbumCardDOM from "../../components/albumcard";
 import ArtistCardDOM from "../../components/artistcard";
 import ArtistTopTracksDOM from "../../components/artisttoptrack";
@@ -167,73 +168,73 @@ const ArtistDetail: NextPage<ArtistDetailProps> = (props: ArtistDetailProps) => 
     );
     return(
         <main>
-        <div className="maincontainer scrollarea">
-            <div>
-            <section className="artist-section">
-                    <div className="align-items-baseline artist-banner">
-                        <div >
-                            <div className="artist-image-banner" style={{backgroundImage: `url(${artist.images[0].url})`}}></div>
-                            <Image className="album-image rounded-circle" src={artist.images[0].url} alt={'...'} width="256" height="256"/>
-                        </div>
-                        <div className="artist-title">
-                            <div className="album-name">
-                                {artist.name}
+            <div className="maincontainer scrollarea">
+                <div>
+                    <section className="artist-section">
+                        <div className="align-items-baseline artist-banner">
+                            <div >
+                                <div className="artist-image-banner" style={{backgroundImage: `url(${artist.images[0].url})`}}></div>
+                                <Image className="album-image rounded-circle" src={artist.images[0].url} alt={'...'} width="256" height="256"/>
                             </div>
-                            <div className="artist-follow d-flex">
-                                <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (followState ? 'active' : '')} onClick={(e) => setFollowStatus(e)}>{followState ? 'Following' : 'Follow'}</button>
-                                <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => playTopTrackInArtist(e, artist?.uri)}>Play</button>
-                            </div>
-                            <div className="album-artist">
-                                {artist.genres[0]}
-                            </div>
-                            <div className="album-date text-muted">
-                                {'Followers: ' + artist.followers.total}
+                            <div className="artist-title">
+                                <div className="album-name">
+                                    {artist.name}
+                                </div>
+                                <div className="artist-follow d-flex">
+                                    <button className={'btn btn-outline-success btn-sm album-follow-btn ' + (followState ? 'active' : '')} onClick={(e) => setFollowStatus(e)}>{followState ? 'Following' : 'Follow'}</button>
+                                    <button className="btn btn-outline-success btn-sm album-follow-btn" onClick={(e) => playTopTrackInArtist(e, artist?.uri)}>Play</button>
+                                </div>
+                                <div className="album-artist">
+                                    {artist.genres[0]}
+                                </div>
+                                <div className="album-date text-muted">
+                                    {'Followers: ' + artist.followers.total}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-                <section className="container artist-section">
-                    <div className="artist-section-title">
-                        Top Songs
-                    </div>
-                    <table className="table table-hover align-middle album-table">
-                        <colgroup>
-                            <col span={1} style={{width:'5%'}}/>
-                            <col span={1} style={{width:'40%'}}/>
-                            <col span={1} style={{width:'40%'}}/>
-                            <col span={1} style={{width:'10%'}}/>
-                            <col span={1} style={{width:'5%'}}/>
-                        </colgroup>
-                        <tbody>
-                            {tracks}
-                        </tbody>
-                    </table>
-                </section>
-                <section className="container artist-section">
-                    <div className="artist-section-title d-flex justify-content-between">
-                        <div>
-                            Albums
+                    </section>
+                    <section className="container artist-section">
+                        <div className="artist-section-title">
+                            Top Songs
                         </div>
-                        <div>
-                            <Link href={`/`} >
-                                <a href="#" className="spotify-link spotify-link-thin spotify-link-small">See All</a>
-                            </Link>
+                        <table className="table table-hover align-middle album-table">
+                            <colgroup>
+                                <col span={1} style={{width:'5%'}}/>
+                                <col span={1} style={{width:'40%'}}/>
+                                <col span={1} style={{width:'40%'}}/>
+                                <col span={1} style={{width:'10%'}}/>
+                                <col span={1} style={{width:'5%'}}/>
+                            </colgroup>
+                            <tbody>
+                                {tracks}
+                            </tbody>
+                        </table>
+                    </section>
+                    <section className="container artist-section">
+                        <div className="artist-section-title d-flex justify-content-between">
+                            <div>
+                                Albums
+                            </div>
+                            <div>
+                                <Link href={`/artists/${id}/discography/all`} >
+                                    <a className="spotify-link spotify-link-thin spotify-link-small">See All</a>
+                                </Link>
+                            </div>
                         </div>
-                    </div>
-                    <div className="d-flex flex-wrap">
-                        {albums}
-                    </div>
-                </section>
-                <section className="container artist-section">
-                    <div className="artist-section-title">
-                        Similar Artists
-                    </div>
-                    <div className="d-flex flex-wrap">
-                        {relatedArtists}
-                    </div>
-                </section>
+                        <div className="d-flex flex-wrap">
+                            {albums}
+                        </div>
+                    </section>
+                    <section className="container artist-section">
+                        <div className="artist-section-title">
+                            Similar Artists
+                        </div>
+                        <div className="d-flex flex-wrap">
+                            {relatedArtists}
+                        </div>
+                    </section>
+                </div>
             </div>
-        </div>
         </main>
     );
 }

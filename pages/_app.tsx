@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { SWRConfig } from "swr";
 import { AxiosRequestConfig } from 'axios'
 import axiosInstance from '../utilities/axios-instance'
+import React from 'react'
 
 const instance = AuthInstance;
 
