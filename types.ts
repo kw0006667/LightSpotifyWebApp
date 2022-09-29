@@ -20,11 +20,58 @@ export interface RecentlyPlayedInfo {
     href?:    string;
 }
 
+export interface FetchAlbumsInfo {
+    href?:      string | null;
+    items:      Album[];
+    next?:      string;
+    cursors?:   Cursors;
+    limit:      number;
+    offset:     number;
+    previous?:  string;
+    total:      number;
+}
+
+export interface FetchUserAlbumsInfo {
+    href:       string,
+    items:      {
+        added_at: string,
+        album: Album
+    }[],
+    next?:      string,
+    limit:      number,
+    offset:     number,
+    previous?:  string,
+    total:      number
+}
+
 export interface FeaturedPlaylistInfo {
     message: string,
     playlists: Playlists
 }
-  
+
+export interface Recommendations {
+    tracks: Track[];
+    seeds:  Seed[];
+}
+
+export interface Seed {
+    initialPoolSize:    number;
+    afterFilteringSize: number;
+    afterRelinkingSize: number;
+    id:                 string;
+    type:               string;
+    href?:               null | string;
+}
+
+export interface FetchPlaylistsInfo {
+    href:     string;
+    items?:    Playlist[] | undefined;
+    limit:    number;
+    next:     string;
+    offset:   number;
+    previous: null;
+    total:    number;
+}
 
 export interface Cursors {
     after?:  string;
@@ -62,7 +109,7 @@ export interface Playlist {
 }
 
 export interface Owner {
-    display_name: string,
+    display_name?: string,
     external_urls: ExternalUrls,
     href: string,
     id: string,
@@ -90,6 +137,40 @@ export enum ContextType {
     Album = "album",
     Artist = "artist",
     Playlist = "playlist",
+}
+
+export interface FetchLikedTracksInfo {
+    href: string,
+    items: {
+        added_at: string,
+        track: Track
+    }[],
+    limit: number,
+    next?: string | null,
+    offset: number,
+    previous?: string | null,
+    total: number
+}
+
+export interface FetchPlaylistTracksInfo {
+    href: string,
+    items: PlaylistTrack[],
+    limit: number,
+    next?: string | null,
+    offset: number,
+    previous?: string | null,
+    total: number
+}
+
+export interface PlaylistTrack {
+    added_at: string,
+    added_by: Owner,
+    is_local: boolean,
+    primary_color?: string | null,
+    track: Track,
+    video_thumbnail: {
+        url?: string | null
+    }
 }
 
 export interface Tracks {
@@ -120,6 +201,10 @@ export interface Track {
     track_number:      number;
     type:              TrackType;
     uri:               string;
+}
+
+export interface FetchAlbumDetailResult {
+    album: Album | undefined
 }
 
 export interface Albums {
@@ -172,6 +257,18 @@ export enum AlbumType {
     Single = "single",
 }
 
+export interface GetFetchArtistsInfo {
+    artists: FetchArtistsInfo
+}
+export interface FetchArtistsInfo {
+    cursor: Cursors,
+    href: string,
+    items: Artist[],
+    limit: number,
+    next?: string | null,
+    total: number
+}
+
 export interface Artists {
     href: string,
     items: Artist[],
@@ -192,6 +289,19 @@ export interface Artist {
     images:        Image[];
     genres:         string[];
     followers:     Follower;
+}
+
+export interface FetchPodcastsInfo {
+    href: string,
+    items: {
+        added_at: string,
+        show: Podcast
+    }[],
+    limit: number,
+    next?: string | null,
+    offset: number,
+    previous?: string | null,
+    total: number
 }
 
 export interface PodcastResult {
@@ -231,6 +341,18 @@ export interface Episode {
     type: TrackType,
     uri: string,
     show: Podcast
+}
+
+export interface FetchCategoriesInfo {
+    categories: {
+        href: string,
+        items: Category[],
+        limit: number,
+        next: string | null,
+        offset: number,
+        previous: string | null,
+        total: number
+    }
 }
 
 export interface Category {

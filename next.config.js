@@ -17,7 +17,9 @@ const nextConfig = {
       "scontent-ort2-1.xx.fbcdn.net",
       "scontent-ort2-2.xx.fbcdn.net",
       "scontent-atl3-1.xx.fbcdn.net",
-      "seed-mix-image.spotifycdn.com"],
+      "seed-mix-image.spotifycdn.com",
+      "scontent-mia3-1.xx.fbcdn.net",
+      "scontent-lga3-1.xx.fbcdn.net"],
   },
   experimental: {
     images: {

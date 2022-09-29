@@ -3,6 +3,13 @@ import { GetServerSideProps, NextPage } from "next";
 import Image from "next/future/image";
 import { NextRouter, useRouter, withRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+  } from '@tanstack/react-query'
 import useSWR from "swr";
 import AlbumTrackDOM from "../../components/albumtrack";
 import ArtistLinkDOM from "../../components/atistlink";
@@ -20,10 +27,10 @@ interface IAlbumDetailState {
     isLoading: boolean
 }
 
-const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
+const albumDetailFetcher = async (config: AxiosRequestConfig<any>): Promise<Album> => axiosInstance.request(config).then(response => response.data);
 
-const useAlbumDetail = (access_token: string | string[] | undefined, id: string | string[] | undefined): {album: Album | undefined} => {
-    const requestConfig = {
+const useAlbumDetailResult = (access_token: string | string[] | undefined, id: string | string[] | undefined): { album: Album | undefined} => {
+    let requestConfig = {
         url: `https://api.spotify.com/v1/albums/${id}`,
         headers: {
             'Authorization': 'Bearer ' + access_token,
@@ -31,32 +38,16 @@ const useAlbumDetail = (access_token: string | string[] | undefined, id: string 
         }
     };
 
-    const { data, mutate } = useSWR(requestConfig, fetcher);
+    const { isLoading, data, isError, error } = useQuery(['albumDetail', requestConfig], () => albumDetailFetcher(requestConfig));
 
     return {
-        album: data
-    };
-}
-
-const useAlbumSaveState = (access_token: string | string[] | undefined, id: string | string[] | undefined): {saveState: boolean} => {
-    const requestConfig = {
-        url: `https://api.spotify.com/v1/me/albums/contains?ids=${id}`,
-        headers: {
-            'Authorization': 'Bearer ' + access_token,
-            'Content-Type': 'application/json'
-        }
-    };
-
-    const { data, error } = useSWR(requestConfig, fetcher);
-
-    return {
-        saveState: data?.at(0)
+        album: data 
     };
 }
 
 const AlbumPage: NextPage<IAlbumDetailProps> = (props: IAlbumDetailProps) => {
     const id = useRouter().query.id;
-    const { album } = useAlbumDetail(props.access_token, id);
+    const { album } = useAlbumDetailResult(props.access_token, id);
     // const { saveState } = useAlbumSaveState(props.access_token, router.query.id);
     const [saveState, setSaveState] = useState(false);
 

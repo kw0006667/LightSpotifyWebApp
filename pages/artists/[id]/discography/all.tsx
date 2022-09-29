@@ -1,11 +1,16 @@
 import React, { useEffect } from 'react';
 import { useRouter } from "next/router";
 import type { GetServerSideProps, NextPage } from 'next';
-import useSWR from "swr";
-import useSWRInfinite, { SWRInfiniteKeyLoader } from 'swr/infinite'
-import { useQuery } from '@tanstack/react-query';
-import { AxiosRequestConfig } from 'axios';
-import { Album } from '../../../../types';
+import { useInView } from 'react-intersection-observer';
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+    useInfiniteQuery,
+  } from '@tanstack/react-query'
+import { FetchAlbumsInfo } from '../../../../types';
 import AlbumCardDOM from '../../../../components/albumcard';
 import axiosInstance from '../../../../utilities/axios-instance';
 
@@ -13,32 +18,64 @@ type AllDiscographyProps = {
     access_token: string | string[] | undefined
 }
 
-const useArtistAllAlbums = (requestConfig: AxiosRequestConfig, id: string | string [] | undefined) : {allAlbums: Album[] | undefined} => {
-    let request = Object.assign({}, requestConfig);
-    request.url = `https://api.spotify.com/v1/artists/${id}/albums?limit=50`;
-    const { data } = useSWR(request);
+const useArtistAllAlbumsInfiniteResult = (access_token: string | string[] | undefined, id: string | string[] | undefined) => {
+    const {
+        status,
+        data,
+        error,
+        isFetching,
+        isFetchingNextPage,
+        isFetchingPreviousPage,
+        fetchNextPage,
+        fetchPreviousPage,
+        hasNextPage,
+        hasPreviousPage,
+      } = useInfiniteQuery(
+        ['allAlbums'],
+        async ({ pageParam = `https://api.spotify.com/v1/artists/${id}/albums?limit=50` }): Promise<FetchAlbumsInfo> => {
+            const requestConfig = {
+                url: pageParam,
+                headers: {
+                    'Authorization': 'Bearer ' + access_token,
+                    'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            };
+            const res = await axiosInstance.request(requestConfig);
+            return res.data;
+        },
+        {
+          getPreviousPageParam: (firstPage) => firstPage.previous ?? undefined,
+          getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+        },
+    );
+
     return {
-        allAlbums: data?.items
+        status: status,
+        data: data,
+        isFetching: isFetching,
+        fetchNextPage: fetchNextPage,
+        hasNextPage: hasNextPage
     };
 }
 
 const AllDiscography: NextPage<AllDiscographyProps> = (props: AllDiscographyProps) => {
     const id = useRouter().query.id;
-    const requestConfig = {
-        url: "",
-        headers: {
-            'Authorization': 'Bearer ' + props.access_token,
-            'Content-Type': 'application/json'
-        },
-        method: 'GET'
-    };
-    const { allAlbums } = useArtistAllAlbums(requestConfig, id);    
+    const { status, data, isFetching, fetchNextPage, hasNextPage } = useArtistAllAlbumsInfiniteResult(props.access_token, id);
+
+    const { ref, inView } = useInView();
 
     useEffect(() => {
-        console.log(id);
-    }, [id]);
+        if (inView) {
+            fetchNextPage();
+        }
+    }, [inView]);
 
-    if (!allAlbums) {
+    // useEffect(() => {
+    //     console.log(id);
+    // }, [id]);
+
+    if (!data && status !== "success" && isFetching) {
         return(
             <main>
                 <div className='container maincontainer scrollarea'>
@@ -57,12 +94,23 @@ const AllDiscography: NextPage<AllDiscographyProps> = (props: AllDiscographyProp
             <div className='container maincontainer scrollarea'>
                 <section className="artist-section">
                     <div className="artist-section-title">
-                        {allAlbums[0].artists?.at(0)?.name}
+                        {/* {allAlbums[0].artists?.at(0)?.name} */}
+                        {/* {data?.pages[0].items[0].artists[0].name} */}
                     </div>
                     <div className="d-flex flex-wrap">
-                        {allAlbums.map(album => {
+                        {/* {allAlbums.map(album => {
                             return(<AlbumCardDOM key={album.id} album={album} />);
-                        })}
+                        })} */}
+                        {data?.pages.map(page => (
+                            <React.Fragment key={page.href}>
+                                {page.items.map(album => (
+                                    <AlbumCardDOM key={album.id} album={album} />
+                                ))}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                    <div ref={ref}>
+
                     </div>
                 </section>
             </div>
