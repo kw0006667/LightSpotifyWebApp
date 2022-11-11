@@ -31,7 +31,7 @@ const useArtistAllAlbumsInfiniteResult = (access_token: string | string[] | unde
         hasNextPage,
         hasPreviousPage,
       } = useInfiniteQuery(
-        ['allAlbums'],
+        ['allAlbums' + id],
         async ({ pageParam = `https://api.spotify.com/v1/artists/${id}/albums?limit=50` }): Promise<FetchAlbumsInfo> => {
             const requestConfig = {
                 url: pageParam,

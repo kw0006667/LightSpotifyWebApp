@@ -161,7 +161,7 @@ const PlaylistDetail: NextPage<IPlaylistDetailProps> = (props: IPlaylistDetailPr
         });
     };
 
-    if (!playlist && status !== "success" && isFetching) {
+    if (!playlist && data && status !== "success" && isFetching) {
         return(
             <div className="text-center">
                 <div className="spinner-border" role="status">
