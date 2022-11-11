@@ -1,8 +1,17 @@
 import { GetServerSideProps, NextPage } from "next";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useInView } from 'react-intersection-observer'
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+    useInfiniteQuery,
+  } from '@tanstack/react-query'
 import CategoryBoxDOM from "../components/categorybox";
 import SearchResultDOM from "../components/searchresult";
-import { ISearchResult, Category} from "../types";
+import { ISearchResult, Category, FetchCategoriesInfo} from "../types";
 import axiosInstance from "../utilities/axios-instance";
 import useSWR from "swr";
 import { AxiosRequestConfig } from "axios";
@@ -12,39 +21,57 @@ interface ISearchProps {
     access_token: string
 }
 
-interface ISearchState {
-    categories: Category[] | undefined,
-    searchResult: ISearchResult | undefined,
-    isResult: boolean,
-    isLoading: boolean
-}
-
-type CategoriesResult = {
-    categories: Category[] | undefined
-}
-
-const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
-
-const useCategories = (access_token: string): CategoriesResult => {
-    const requestConfig = {
-        url: `https://api.spotify.com/v1/browse/categories?country=${AuthInstance.personalData?.country}&offset=0&limit=50`,
-        headers: {
-            'Authorization': 'Bearer ' + access_token,
-            'Content-Type': 'application/json'
+const useCategoriesInfinite = (access_token: string) => {
+    const {
+        status,
+        data,
+        error,
+        isFetching,
+        isFetchingNextPage,
+        isFetchingPreviousPage,
+        fetchNextPage,
+        fetchPreviousPage,
+        hasNextPage,
+        hasPreviousPage,
+      } = useInfiniteQuery(
+        ['projects'],
+        async ({ pageParam = `https://api.spotify.com/v1/browse/categories?country=${AuthInstance.personalData?.country}&offset=0&limit=50` }): Promise<FetchCategoriesInfo> => {
+            const requestConfig = {
+                url: pageParam,
+                headers: {
+                    'Authorization': 'Bearer ' + access_token,
+                    'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            };
+            const res = await axiosInstance.request(requestConfig);
+            return res.data;
         },
-        method: 'GET'
-    };
-
-    const { data, error } = useSWR(requestConfig, fetcher);
+        {
+          getPreviousPageParam: (firstPage) => firstPage.categories?.previous ?? undefined,
+          getNextPageParam: (lastPage) => lastPage.categories?.next ?? undefined,
+        },
+    );
 
     return {
-        categories: data?.categories.items
+        status: status,
+        data: data,
+        isFetching: isFetching,
+        fetchNextPage: fetchNextPage,
+        hasNextPage: hasNextPage
     };
 }
 
 const SearchPage: NextPage<ISearchProps> = (props: ISearchProps) => {
-    const { categories } = useCategories(props.access_token);
+    const { status, data, isFetching, fetchNextPage, hasNextPage } = useCategoriesInfinite(props.access_token);
     const [searchResult, setSearchResult] = useState<ISearchResult | undefined>();
+    const { ref, inView } = useInView();
+
+    useEffect(() => {
+        if (inView) {
+            fetchNextPage();
+        }
+    }, [inView]);
 
     const searchInput = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
@@ -65,7 +92,7 @@ const SearchPage: NextPage<ISearchProps> = (props: ISearchProps) => {
         }
     }
 
-    if (!categories) {
+    if (isFetching) {
         return(
             <main>
                 <div className='container maincontainer scrollarea'>
@@ -84,13 +111,9 @@ const SearchPage: NextPage<ISearchProps> = (props: ISearchProps) => {
         result = <SearchResultDOM searchResult={searchResult} />;
     }
 
-    let categoryArray = categories.map(category => {
-        return( <CategoryBoxDOM key={category.id} category={category} />);
-    });
-
     return(
         <main>
-            <div className='container maincontainer scrollarea'>
+            <div className='container maincontainer scrollarea' ref={ref}>
                 <div style={{marginTop: '10px'}}>
                     <section>
                         <div className="m-3">
@@ -106,7 +129,13 @@ const SearchPage: NextPage<ISearchProps> = (props: ISearchProps) => {
                                 Categories
                             </div>
                             <div className="d-flex flex-wrap">
-                                {categoryArray}
+                                {data?.pages.map(page => (
+                                    <React.Fragment key={page.categories.href}>
+                                        {page.categories.items.map(category => (
+                                            <CategoryBoxDOM key={category.id} category={category} />
+                                        ))}
+                                    </React.Fragment>
+                                ))}
                             </div>
                         </section>
                     </div>

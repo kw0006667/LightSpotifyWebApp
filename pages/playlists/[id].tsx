@@ -3,9 +3,18 @@ import { GetServerSideProps, NextPage } from 'next';
 import Image from 'next/future/image';
 import { NextRouter, useRouter, withRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
+import { InView, useInView } from 'react-intersection-observer';
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+    useInfiniteQuery,
+  } from '@tanstack/react-query'
 import useSWR from "swr";
 import PlaylistTrackDOM from "../../components/playlisttrack";
-import { Playlist } from "../../types";
+import { FetchPlaylistTracksInfo, Playlist } from "../../types";
 import Authorization from '../../utilities/auth';
 import AuthInstance from '../../utilities/auth-instance';
 import axiosInstance from '../../utilities/axios-instance';
@@ -20,9 +29,50 @@ interface IPlaylistDetailState {
 
 const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
 
+const usePlaylistTracksInfiniteResult = (access_token: string | string[] | undefined, id: string | string[] | undefined) => {
+    const {
+        status,
+        data,
+        error,
+        isFetching,
+        isFetchingNextPage,
+        isFetchingPreviousPage,
+        fetchNextPage,
+        fetchPreviousPage,
+        hasNextPage,
+        hasPreviousPage,
+      } = useInfiniteQuery(
+        ['projects'],
+        async ({ pageParam = `https://api.spotify.com/v1/playlists/${id}/tracks?limit=50` }): Promise<FetchPlaylistTracksInfo> => {
+            const requestConfig = {
+                url: pageParam,
+                headers: {
+                    'Authorization': 'Bearer ' + access_token,
+                    'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            };
+            const res = await axiosInstance.request(requestConfig);
+            return res.data;
+        },
+        {
+          getPreviousPageParam: (firstPage) => firstPage.previous ?? undefined,
+          getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+        },
+    );
+
+    return {
+        status: status,
+        data: data,
+        isFetching: isFetching,
+        fetchNextPage: fetchNextPage,
+        hasNextPage: hasNextPage
+    };
+}
+
 const usePlaylistDetail = (access_token: string | string[] | undefined, id: string | string[] | undefined): IPlaylistDetailState=> {
     const requestConfig = {
-        url: `https://api.spotify.com/v1/playlists/${id}?additional_types=track,episode`,
+        url: `https://api.spotify.com/v1/playlists/${id}`,
         headers: {
             'Authorization': 'Bearer ' + access_token,
             'Content-Type': 'application/json'
@@ -39,9 +89,17 @@ const usePlaylistDetail = (access_token: string | string[] | undefined, id: stri
 
 const PlaylistDetail: NextPage<IPlaylistDetailProps> = (props: IPlaylistDetailProps) => {
     const id = useRouter().query.id;
-    // const [playlist, setPlaylist] = useState<Playlist | undefined>();
     const { playlist } = usePlaylistDetail(props.access_token, id);
+    const { status, data, isFetching, fetchNextPage, hasNextPage } = usePlaylistTracksInfiniteResult(props.access_token, id);
     const [followState, setFollowState] = useState(false);
+
+    const { ref, inView } = useInView();
+
+    useEffect(() => {
+        if (inView) {
+            fetchNextPage();
+        }
+    }, [inView]);
 
     useEffect(() => {
         getFollowingStatus();
@@ -103,7 +161,7 @@ const PlaylistDetail: NextPage<IPlaylistDetailProps> = (props: IPlaylistDetailPr
         });
     };
 
-    if (!playlist) {
+    if (!playlist && data && status !== "success" && isFetching) {
         return(
             <div className="text-center">
                 <div className="spinner-border" role="status">
@@ -114,10 +172,6 @@ const PlaylistDetail: NextPage<IPlaylistDetailProps> = (props: IPlaylistDetailPr
     }
 
     let trackId = 0;
-        let tracks = playlist?.tracks.items.map(track => {
-                trackId++;
-                return <PlaylistTrackDOM key={trackId} numberId={trackId} playlistUri={playlist?.uri}  track={track.track} />
-        });
 
     let imageUrl = playlist?.images.at(0)?.url ?? '/../../public/Spotify_Icon_RGB_Black.png';
     return (
@@ -167,9 +221,19 @@ const PlaylistDetail: NextPage<IPlaylistDetailProps> = (props: IPlaylistDetailPr
                                 </tr>
                             </thead>
                             <tbody>
-                                {tracks}
+                                {data?.pages.map(page => (
+                                    <React.Fragment key={page.href}>
+                                        {page.items.map(item => {
+                                            trackId++;
+                                            return(
+                                                <PlaylistTrackDOM key={trackId} numberId={trackId} playlistUri={playlist?.uri} track={item.track} />
+                                            );
+                                        })}
+                                    </React.Fragment>
+                                ))}
                             </tbody>
                         </table>
+                        <div ref={ref}></div>
                     </section>
                 </div>
             </div>

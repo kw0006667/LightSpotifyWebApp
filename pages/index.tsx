@@ -2,15 +2,20 @@ import { AxiosRequestConfig } from 'axios'
 import type { GetServerSideProps, NextPage } from 'next'
 import Head from 'next/head'
 import React, { ReactComponentElement, useEffect, useRef } from 'react'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 import AlbumCardDOM from '../components/albumcard'
-import ArtistCardDOM from '../components/artistcard'
 import PlaylistCardDOM from '../components/playlistcard'
 import RecentlyPlayedCardDOM from '../components/recentlyplayedcard'
 import TrackCardDOM from '../components/trackcard'
-import { Album, Context, ContextType, Item, Playlist, Track } from '../types'
+import { Album, Context, ContextType, Item, Playlist, Track, FetchAlbumsInfo, RecentlyPlayedInfo, FeaturedPlaylistInfo, Recommendations } from '../types'
 import axiosInstance from '../utilities/axios-instance'
-import { SpotifyUtils } from '../utilities/spotifyutils'
-import useSWR from "swr";
+import AuthInstance from '../utilities/auth-instance'
 
 type HomeProps = {
   access_token: string
@@ -24,7 +29,10 @@ type HomeState = {
   isLoading: boolean
 };
 
-const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
+const recentlyPlayedResultsFetcher = async (config: AxiosRequestConfig<any>): Promise<RecentlyPlayedInfo> => axiosInstance.request(config).then(response => response.data);
+const featuredPlaylistsFetcher = async (config: AxiosRequestConfig<any>): Promise<FeaturedPlaylistInfo> => axiosInstance.request(config).then(response => response.data);
+const newReleaseFetcher = async (config: AxiosRequestConfig<any>): Promise<{albums: FetchAlbumsInfo}> => axiosInstance.request(config).then(response => response.data);
+const recommendationsFetcher = async (config: AxiosRequestConfig<any>): Promise<Recommendations> => axiosInstance.request(config).then(response => response.data);
 
 const useRecentlyPlayedResults = (access_token: string, dateNow: number): {recentlyPlayedResultsItems: Item[] | undefined}=> {
   let recentlyPlayedRequestConfig = {
@@ -36,7 +44,7 @@ const useRecentlyPlayedResults = (access_token: string, dateNow: number): {recen
     method: 'GET'
   };
 
-  const { data, error } = useSWR(recentlyPlayedRequestConfig, fetcher);
+  const { isLoading, data, isError, error } = useQuery(['recentlyPlayed', recentlyPlayedRequestConfig], () => recentlyPlayedResultsFetcher(recentlyPlayedRequestConfig));
 
   return {
     recentlyPlayedResultsItems: data?.items
@@ -45,7 +53,7 @@ const useRecentlyPlayedResults = (access_token: string, dateNow: number): {recen
 
 const useFeaturedPlaylists = (access_token: string): { featuredPlaylistItems: Playlist[] | undefined} => {
   const featuredPlaylistsRequestConfig = {
-    url: `https://api.spotify.com/v1/browse/featured-playlists?country=tw`,
+    url: `https://api.spotify.com/v1/browse/featured-playlists?country=${AuthInstance.personalData?.country}`,
     headers: {
         'Authorization': 'Bearer ' + access_token,
         'Content-Type': 'application/json'
@@ -53,7 +61,7 @@ const useFeaturedPlaylists = (access_token: string): { featuredPlaylistItems: Pl
     method: 'GET'
   };
 
-  const { data, error } = useSWR(featuredPlaylistsRequestConfig, fetcher);
+  const { isLoading, data, isError, error } = useQuery(['featuredPlaylists', featuredPlaylistsRequestConfig], () => featuredPlaylistsFetcher(featuredPlaylistsRequestConfig));
 
   return {
     featuredPlaylistItems: data?.playlists?.items
@@ -61,8 +69,8 @@ const useFeaturedPlaylists = (access_token: string): { featuredPlaylistItems: Pl
 }
 
 const useNewReleaseAlbums = (access_token: string): { newReleaseAlbumItems: Album[] | undefined } => {
-  const newReleaseRequestConfig = {
-    url: `https://api.spotify.com/v1/browse/new-releases?country=tw`,
+  const config = {
+    url: `https://api.spotify.com/v1/browse/new-releases?country=${AuthInstance.personalData?.country}`,
     headers: {
         'Authorization': 'Bearer ' + access_token,
         'Content-Type': 'application/json'
@@ -70,7 +78,7 @@ const useNewReleaseAlbums = (access_token: string): { newReleaseAlbumItems: Albu
     method: 'GET'
   };
 
-  const { data, error } = useSWR(newReleaseRequestConfig, fetcher);
+  const { isLoading, data, isError, error } = useQuery(['newReleaseAlbums', config], () => newReleaseFetcher(config));
 
   return {
     newReleaseAlbumItems: data?.albums?.items
@@ -92,7 +100,7 @@ const useMandpopPickedTracks = (access_token: string, predictInput: {context: Co
     method: 'GET'
   };
 
-  const { data, error } = useSWR(requestConfig, fetcher);
+  const { isLoading, data, isError, error } = useQuery(['recommendations', requestConfig], () => recommendationsFetcher(requestConfig));
 
   return {
     mandopopPickedTracks: data?.tracks.slice(0, 6)

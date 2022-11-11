@@ -1,44 +1,76 @@
-import { AxiosRequestConfig } from "axios";
 import { GetServerSideProps, GetStaticProps, NextPage, NextPageContext } from "next";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useInView } from 'react-intersection-observer';
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+    useInfiniteQuery,
+  } from '@tanstack/react-query'
 import PlaylistCardDOM from "../components/playlistcard";
-import { PersonalData, Playlist, Playlists } from "../types";
+import { FetchPlaylistsInfo, PersonalData, Playlist, Playlists } from "../types";
 import AuthInstance from "../utilities/auth-instance";
 import axiosInstance from "../utilities/axios-instance";
-import useSWR from "swr";
 
 type PlaylistProps = {
     access_token: string
 };
 
-type PlaylistState = {
-    playlists: Playlist[] | undefined,
-    isLoading: boolean
-};
-
-const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
-
-const usePlaylistsResult = (access_token: string): {playlists: Playlist[] | undefined} => {
-    const requestConfig = {
-        url: `https://api.spotify.com/v1/me/playlists?limit=50`,
-        headers: {
-            'Authorization': 'Bearer ' + access_token,
-            'Content-Type': 'application/json'
+const usePlaylistsInfiniteResult = (access_token: string) => {
+    const {
+        status,
+        data,
+        error,
+        isFetching,
+        isFetchingNextPage,
+        isFetchingPreviousPage,
+        fetchNextPage,
+        fetchPreviousPage,
+        hasNextPage,
+        hasPreviousPage,
+      } = useInfiniteQuery(
+        ['projects'],
+        async ({ pageParam = 'https://api.spotify.com/v1/me/playlists?limit=50' }): Promise<FetchPlaylistsInfo> => {
+            const requestConfig = {
+                url: pageParam,
+                headers: {
+                    'Authorization': 'Bearer ' + access_token,
+                    'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            };
+            const res = await axiosInstance.request(requestConfig);
+            return res.data;
         },
-        method: 'GET'
-    };
-
-    const { data, error } = useSWR(requestConfig, fetcher);
+        {
+          getPreviousPageParam: (firstPage) => firstPage.previous ?? undefined,
+          getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+        },
+    );
 
     return {
-        playlists: data?.items
+        status: status,
+        data: data,
+        isFetching: isFetching,
+        fetchNextPage: fetchNextPage,
+        hasNextPage: hasNextPage
     };
 }
 
 const PlaylistPage: NextPage<PlaylistProps> = (props: PlaylistProps) => {
-    const { playlists } = usePlaylistsResult(props.access_token);
+    const { status, data, isFetching, fetchNextPage, hasNextPage } = usePlaylistsInfiniteResult(props.access_token);
+    
+    const { ref, inView } = useInView();
 
-    if (!playlists) {
+    useEffect(() => {
+        if (inView) {
+            fetchNextPage();
+        }
+    }, [inView])
+
+    if (isFetching) {
         return(
             <main>
                 <div className='container maincontainer scrollarea'>
@@ -54,11 +86,18 @@ const PlaylistPage: NextPage<PlaylistProps> = (props: PlaylistProps) => {
 
     return(
         <main>
-            <div className='container maincontainer scrollarea'>
+            <div className='container maincontainer scrollarea' ref={ref}>
                 <div className="d-flex flex-wrap">
-                    {playlists?.map(playlist => {
+                    {/* {playlists?.map(playlist => {
                         return( <PlaylistCardDOM key={playlist.id} playlist={playlist} />);
-                    })}
+                    })} */}
+                    {data?.pages.map(page => (
+                        <React.Fragment key={page.href}>
+                            {page.items?.map(playlist => (
+                                <PlaylistCardDOM key={playlist.id} playlist={playlist} />
+                            ))}
+                        </React.Fragment>
+                    ))}
                 </div>
             </div>
         </main>

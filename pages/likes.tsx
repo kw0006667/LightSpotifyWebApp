@@ -1,47 +1,78 @@
 import { GetServerSideProps, NextPage } from "next";
-import React from "react";
+import React, { useEffect } from "react";
+import { useInView } from 'react-intersection-observer';
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+    useInfiniteQuery,
+  } from '@tanstack/react-query'
 import Image from "next/future/image";
-import { Item, Track } from "../types";
+import { FetchLikedTracksInfo } from "../types";
 import axiosInstance from "../utilities/axios-instance";
 import AlbumTrackDOM from "../components/albumtrack";
 import AuthInstance from "../utilities/auth-instance";
 import { AxiosRequestConfig } from "axios";
-import useSWR from "swr";
 
 interface ILikeDetailProps {
-    access_token: string | string[] | undefined
+    access_token: string
 }
 
-interface ILikeDetailState {
-    tracks: Item[] | undefined
-}
-
-const fetcher = (config: AxiosRequestConfig<any>) => axiosInstance.request(config).then(response => response.data);
-
-const useLikedTracks = (access_token: string | string[] | undefined): ILikeDetailState => {
-    const requestConfig = {
-        url: `https://api.spotify.com/v1/me/tracks?limit=50`,
-        headers: {
-            'Authorization': 'Bearer ' + access_token,
-            'Content-Type': 'application/json'
-        }
-    };
-
-    const { data, error } = useSWR(requestConfig, fetcher);
+const useLikedTracksInfiniteResult = (access_token: string) => {
+    const {
+        status,
+        data,
+        error,
+        isFetching,
+        isFetchingNextPage,
+        isFetchingPreviousPage,
+        fetchNextPage,
+        fetchPreviousPage,
+        hasNextPage,
+        hasPreviousPage,
+      } = useInfiniteQuery(
+        ['projects'],
+        async ({ pageParam = 'https://api.spotify.com/v1/me/tracks?limit=50' }): Promise<FetchLikedTracksInfo> => {
+            const requestConfig = {
+                url: pageParam,
+                headers: {
+                    'Authorization': 'Bearer ' + access_token,
+                    'Content-Type': 'application/json'
+                },
+                method: 'GET'
+            };
+            const res = await axiosInstance.request(requestConfig);
+            return res.data;
+        },
+        {
+          getPreviousPageParam: (firstPage) => firstPage.previous ?? undefined,
+          getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+        },
+    );
 
     return {
-        tracks: data?.items
+        status: status,
+        data: data,
+        isFetching: isFetching,
+        fetchNextPage: fetchNextPage,
+        hasNextPage: hasNextPage
     };
 }
 
 const LikePage: NextPage<ILikeDetailProps> = (props: ILikeDetailProps) => {
-    const { tracks } = useLikedTracks(props.access_token);
+    const { status, data, isFetching, fetchNextPage, hasNextPage } = useLikedTracksInfiniteResult(props.access_token);
+
+    const { ref, inView } = useInView();
+
+    useEffect(() => {
+        if (inView) {
+            fetchNextPage();
+        }
+    }, [inView]);
 
     const playEntirePlaylist = () => {
-        const trackUris: string[] = [];
-        tracks?.forEach(item => {
-            trackUris.push(item.track.uri);
-        });
 
         let requestConfig = {
             url: `https://api.spotify.com/v1/me/player/play?device_id=${AuthInstance.currentDeviceId}`,
@@ -63,7 +94,7 @@ const LikePage: NextPage<ILikeDetailProps> = (props: ILikeDetailProps) => {
         });
     }
 
-    if (!tracks) {
+    if (isFetching) {
         return(
             <div className="text-center">
                 <div className="spinner-border" role="status">
@@ -72,17 +103,20 @@ const LikePage: NextPage<ILikeDetailProps> = (props: ILikeDetailProps) => {
             </div>
         );
     }
+
+    const trackUris: string[] = [];
+    data?.pages.map(page => {
+        page.items.map(item => {
+            trackUris.push(item.track.uri);
+        });
+    });
     
     let trackId = 0;
-    let trackItems = tracks.map(track => {
-            trackId++;
-            return <AlbumTrackDOM key={track.track.id} trackId={trackId} track={track.track} albumUri={track.track.album?.uri}/>
-    });
 
-    let imageUrl = tracks[0].track.album.images?.at(0)?.url ?? '';
+    let imageUrl = data?.pages[0].items[0].track.album.images?.at(0)?.url ?? '';
     return(
         <main>
-            <div className="container maincontainer scrollarea">
+            <div className="container maincontainer scrollarea" ref={ref}>
                 <section>
                     <div className="d-flex align-items-baseline">
                         <div>
@@ -115,7 +149,14 @@ const LikePage: NextPage<ILikeDetailProps> = (props: ILikeDetailProps) => {
                             <col span={1} style={{width:'5%'}}/>
                         </colgroup>
                         <tbody>
-                            {trackItems}
+                            {data?.pages.map(page => (
+                                <React.Fragment key={page.href}>
+                                    {page.items.map(item => {
+                                        trackId++;
+                                        return(<AlbumTrackDOM key={item.track.id} trackId={trackId} track={item.track} albumUri={item.track.album?.uri} />
+                                );})}
+                                </React.Fragment>
+                            ))}
                         </tbody>
                     </table>
                 </section>

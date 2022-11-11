@@ -35,21 +35,21 @@ function AlbumCardDOM(props: { album: Album}) {
         });
     }
 
-    let artists = props.album.artists.map(artist => {
+    let artists = props.album?.artists?.map(artist => {
         return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
     });
 
     return(
-        <div className="card-playlist m-2" onClick={(e) => navigateToAlbumDetail(e, props.album.id)}>
+        <div className="card-playlist m-2" onClick={(e) => navigateToAlbumDetail(e, props.album?.id)}>
             <div style={{position: 'relative'}}>
-                <Image src={props.album.images[0].url} className="card-img-top card-playlist-img" alt="..." height="200" width="200" />
+                <Image src={props.album?.images[0].url} className="card-img-top card-playlist-img" alt="..." height="200" width="200" />
                 <div className="card-cover"></div>
-                <button className="btn btn-success card-play-button" onClick={(e) => playEntireAlbum(e, props.album.uri)}>
+                <button className="btn btn-success card-play-button" onClick={(e) => playEntireAlbum(e, props.album?.uri)}>
                     <i className="bi bi-play"></i>
                 </button>
             </div>
             <div className="card-body">
-                <div className="card-title">{props.album.name}</div>
+                <div className="card-title">{props.album?.name}</div>
                 <div className="card-subtitle mb-2 text-muted">{artists}</div>
             </div>
         </div>

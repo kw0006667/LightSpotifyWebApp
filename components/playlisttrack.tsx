@@ -12,7 +12,7 @@ type TrackProps = {
     track: Track
 }
 function PlaylistTrackDOM(props: TrackProps) {
-    let artists = props.track.artists?.map(artist => {
+    let artists = props.track?.artists?.map(artist => {
         return( <ArtistLinkDOM key={artist.id} artistId={artist.id} artistName={artist.name}>, </ArtistLinkDOM>);
     });
 
@@ -42,19 +42,19 @@ function PlaylistTrackDOM(props: TrackProps) {
     }
 
     return(
-        <tr className="album-table-row" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track.uri)}>
+        <tr className="album-table-row" onDoubleClick={() => playTrackInPlaylist(props.playlistUri, props.track?.uri)}>
             <th scope="row">{props.numberId}</th>
             <td>
                 <div className="d-flex justify-content-between" >
-                    {props.track.name} 
+                    {props.track?.name} 
                     <div className="album-track-like">
-                        <LikeDOM track={props.track} />
+                        {/* <LikeDOM track={props.track} /> */}
                     </div>
                 </div>
             </td>
             <td>{artists}</td>
-            <td><AlbumLinkDOM albumId={props.track.album.id} albumName={props.track.album.name} /></td>
-            <td>{new Date(props.track.duration_ms).toISOString().slice(14,19)}</td>
+            <td><AlbumLinkDOM albumId={props.track?.album.id} albumName={props.track?.album.name} /></td>
+            <td>{props.track ? new Date(props.track?.duration_ms).toISOString().slice(14,19) : ''}</td>
             <td>{'...'}</td>
         </tr>
     );

@@ -4,14 +4,12 @@ import Link from "next/link";
 import { NextRouter, useRouter, withRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
-import bootstrap from "bootstrap";
-import AlbumCardDOM from "../../components/albumcard";
-import ArtistCardDOM from "../../components/artistcard";
-import ArtistTopTracksDOM from "../../components/artisttoptrack";
-import { Album, Artist, AxiosRequestConfig, Track } from "../../types";
-import Authorization from "../../utilities/auth";
-import AuthInstance from "../../utilities/auth-instance";
-import axiosInstance from "../../utilities/axios-instance";
+import AlbumCardDOM from "../../../components/albumcard";
+import ArtistCardDOM from "../../../components/artistcard";
+import ArtistTopTracksDOM from "../../../components/artisttoptrack";
+import { Album, Artist, AxiosRequestConfig, Track } from "../../../types";
+import AuthInstance from "../../../utilities/auth-instance";
+import axiosInstance from "../../../utilities/axios-instance";
 
 interface ArtistDetailProps {
     access_token: string
