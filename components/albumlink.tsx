@@ -8,8 +8,8 @@ type AlbumLinkProps = {
 
 function AlbumLinkDOM(props: AlbumLinkProps) {
     return(
-        <Link href={`/albums/${props.albumId}`}>
-            <a className="spotify-link">{props.albumName}</a>
+        <Link href={`/albums/${props.albumId}`} className="spotify-link">
+            {props.albumName}
         </Link>
     );
 }

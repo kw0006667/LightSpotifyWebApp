@@ -1,6 +1,6 @@
 // Reference type from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/spotify-web-playback-sdk/index.d.ts
 import React from "react";
-import Image from "next/future/image";
+import Image from "next/image";
 import AuthInstance from "../utilities/auth-instance";
 import axiosInstance from "../utilities/axios-instance";
 import TrackLinkDOM from "./tracklink";
@@ -461,24 +461,24 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
 
     ArtistInfoLinkDOM(props: {artistUri: string, artistName: string, children: string}) {
         return(
-            <Link href={WebPlayback.getContextLink(props.artistUri)}>
-                <a className="spotify-link">{props.artistName}</a>
+            <Link href={WebPlayback.getContextLink(props.artistUri)} className="spotify-link">
+                {props.artistName}
             </Link>
         );
     }
 
     EpisodeInfoLinkDOM(props: {episode: Spotify.Track | undefined}) {
         return(
-            <Link href={WebPlayback.getContextLink(props.episode?.uri)}>
-                <a className="spotify-link">{props.episode?.name}</a>
+            <Link href={WebPlayback.getContextLink(props.episode?.uri)} className="spotify-link">
+                {props.episode?.name}
             </Link>
         );
     }
 
     PodcastInfoLinkDOM(props: {podcast: Spotify.Album | undefined}) {
         return(
-            <Link href={WebPlayback.getContextLink(props.podcast?.uri)}>
-                <a className="spotify-link">{props.podcast?.name}</a>
+            <Link href={WebPlayback.getContextLink(props.podcast?.uri)} className="spotify-link">
+                {props.podcast?.name}
             </Link>
         )
     }
@@ -517,9 +517,7 @@ class WebPlayback extends React.Component<IWebPlaybackProps, IWebPlaybackState> 
             <>
                 <div className="d-flex footer-left">
                     <Link href={WebPlayback.getContextLink(this.state.currentState?.context.uri)}>
-                        <a>
-                            <Image id="coverPhoto" src={this.state.currentTrack?.album.images[0].url ?? "https://i.scdn.co/image/ab67616d0000b273fb0610caa5ce0747743fb52e"} alt={'...'} height="64" width="64" />
-                        </a>
+                        <Image id="coverPhoto" src={this.state.currentTrack?.album.images[0].url ?? "https://i.scdn.co/image/ab67616d0000b273fb0610caa5ce0747743fb52e"} alt={'...'} height="64" width="64" />
                     </Link>
                     <div id="playingInfo" className="playing-info mx-2 d-flex">
                         <div>

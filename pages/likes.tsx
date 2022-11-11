@@ -9,7 +9,7 @@ import {
     QueryClientProvider,
     useInfiniteQuery,
   } from '@tanstack/react-query'
-import Image from "next/future/image";
+import Image from "next/image";
 import { FetchLikedTracksInfo } from "../types";
 import axiosInstance from "../utilities/axios-instance";
 import AlbumTrackDOM from "../components/albumtrack";

@@ -7,8 +7,8 @@ interface PodcastProps {
 
 function PodcastLinkDOM(props: PodcastProps) {
     return(
-        <Link href={`/podcasts/${props.podcast.id}`}>
-            <a className="spotify-link" >{props.podcast.publisher}</a>
+        <Link href={`/podcasts/${props.podcast.id}`} className="spotify-link">
+            {props.podcast.publisher}
         </Link>
     );
 }

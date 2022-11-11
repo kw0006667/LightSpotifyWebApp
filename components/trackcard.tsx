@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { Track } from "../types";
-import Image  from "next/future/image";
+import Image  from "next/image";
 import ArtistLinkDOM from "./atistlink";
 import React from "react";
 import axiosInstance from "../utilities/axios-instance";

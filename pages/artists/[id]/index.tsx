@@ -1,5 +1,5 @@
 import { GetServerSideProps, GetStaticPaths, GetStaticProps, NextPage, NextPageContext } from "next";
-import Image from "next/future/image";
+import Image from "next/image";
 import Link from "next/link";
 import { NextRouter, useRouter, withRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
@@ -214,8 +214,8 @@ const ArtistDetail: NextPage<ArtistDetailProps> = (props: ArtistDetailProps) => 
                                 Albums
                             </div>
                             <div>
-                                <Link href={`/artists/${id}/discography/all`} >
-                                    <a className="spotify-link spotify-link-thin spotify-link-small">See All</a>
+                                <Link href={`/artists/${id}/discography/all`} className="spotify-link spotify-link-thin spotify-link-small">
+                                    See All
                                 </Link>
                             </div>
                         </div>
