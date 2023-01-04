@@ -9,12 +9,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     let client_id = process.env.NEXT_PUBLIC_CLIENT_ID ?? "";
     let client_secret = process.env.NEXT_PUBLIC_CLIENT_SECRET ?? "";
+    let client_redirect_uri = process.env.NEXT_PUBLIC_REDIRECT_URI ?? "";
 
     let authOptions = {
         url: 'https://accounts.spotify.com/api/token',
         form: {
             code: code,
-            redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI,
+            redirect_uri: client_redirect_uri,
             grant_type: 'authorization_code'
         },
         headers: {
