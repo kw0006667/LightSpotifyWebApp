@@ -33,8 +33,7 @@ export default class Authorization {
     }
 
     constructor() {
-
-        axiosInstance.get('http://localhost:3000/api/refresh_token_api')
+        axiosInstance.get(process.env.NEXT_PUBLIC_HOST_URL + '/api/refresh_token_api')
         .then(response => {
             this.access_token = response.data.access_token;
             let requestConfig = {
