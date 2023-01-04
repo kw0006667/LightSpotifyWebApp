@@ -18,8 +18,8 @@ export default class Authorization {
     currentDeviceId: string = "";
 
     async RefreshToken() {
-
-        return fetch('/api/refresh_token_api')
+        const hostUrl = process.env.NEXT_PUBLIC_HOST_URL ?? "";
+        return fetch(hostUrl + '/api/refresh_token_api')
         .then(response => {
             if (response.ok) {
                 return response.json();
@@ -33,7 +33,8 @@ export default class Authorization {
     }
 
     constructor() {
-        axiosInstance.get(process.env.NEXT_PUBLIC_HOST_URL + '/api/refresh_token_api')
+        const hostUrl = process.env.NEXT_PUBLIC_HOST_URL ?? "";
+        axiosInstance.get(hostUrl + '/api/refresh_token_api')
         .then(response => {
             this.access_token = response.data.access_token;
             let requestConfig = {
