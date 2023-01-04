@@ -9,18 +9,5 @@ type Data = {
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-    const cookies = new Cookies(req, res);
-    const access_token = cookies.get('access_token');
-    axios.get('https://api.spotify.com/v1/me', {
-        headers: { 'Authorization': 'Bearer ' + access_token },
-    })
-    .then(response => {
-      if (response.status === 401) {
-        res.redirect('/api/refresh_token');
-      }
-
-      if (response.status === 200) {
-        res.status(200).json(response.data);
-      }
-    });
+  res.status(200).json({ name: 'John Doe' })
 }
