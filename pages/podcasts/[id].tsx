@@ -1,5 +1,5 @@
 import { GetServerSideProps, NextPage } from "next";
-import Image from "next/future/image";
+import Image from "next/image";
 import { useRouter, withRouter, NextRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";

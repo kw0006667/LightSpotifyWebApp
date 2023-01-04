@@ -21,8 +21,8 @@ function TrackLinkDOM(props: ITrackLinkProps) {
     };
 
     return(
-        <Link href={WebPlayback.getContextLink(props.track?.album.uri)}>
-            <a className="spotify-link" data-bs-toggle="tooltip" title={props.track?.name} onClick={(e) => navigateToContextDetail(e, props.track?.album.uri)}>{props.track?.name}</a>
+        <Link href={WebPlayback.getContextLink(props.track?.album.uri)} className="spotify-link" data-bs-toggle="tooltip" title={props.track?.name} onClick={(e) => navigateToContextDetail(e, props.track?.album.uri)}>
+            {props.track?.name}
         </Link>
     );
 }

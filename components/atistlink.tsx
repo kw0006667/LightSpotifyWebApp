@@ -9,8 +9,8 @@ interface Props {
 
 function ArtistLinkDOM(props: Props) {
     return(
-        <Link href={`/artists/${props.artistId}`} >
-            <a className="spotify-link">{props.artistName}</a>
+        <Link href={`/artists/${props.artistId}`} className="spotify-link">
+            {props.artistName}
         </Link>
     );
 }

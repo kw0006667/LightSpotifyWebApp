@@ -40,10 +40,8 @@ function LikeDOM(props: {track: Spotify.Track | Track | undefined}) {
     }
 
     return(
-        <Link  href={"#"}>
-            <a onClick={() => LikeTrack()}>
-                <i className={"bi " + (isLike ? "bi-heart-fill" : "bi-heart")}></i>
-            </a>
+        <Link  href={"#"} onClick={() => LikeTrack()}>
+            <i className={"bi " + (isLike ? "bi-heart-fill" : "bi-heart")}></i>
         </Link>
     )
 }
