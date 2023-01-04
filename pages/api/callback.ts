@@ -14,7 +14,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         url: 'https://accounts.spotify.com/api/token',
         form: {
             code: code,
-            redirect_uri: 'http://localhost:3000/api/callback',
+            redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI,
             grant_type: 'authorization_code'
         },
         headers: {
