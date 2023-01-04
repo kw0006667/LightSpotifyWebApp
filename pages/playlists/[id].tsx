@@ -174,6 +174,7 @@ const PlaylistDetail: NextPage<IPlaylistDetailProps> = (props: IPlaylistDetailPr
     let trackId = 0;
 
     let imageUrl = playlist?.images.at(0)?.url ?? '/../../public/Spotify_Icon_RGB_Black.png';
+    let altStr = playlist?.name ?? '';
     return (
         <main>
             <div className="container maincontainer scrollarea">
@@ -181,7 +182,7 @@ const PlaylistDetail: NextPage<IPlaylistDetailProps> = (props: IPlaylistDetailPr
                     <section>
                         <div className="d-flex align-items-end">
                             <div>
-                                <Image className="album-image" src={imageUrl} alt={playlist?.name} width="256" height="256" />
+                                <Image className="album-image" src={imageUrl} alt={altStr} width="256" height="256" />
                             </div>
                             <div className="album-title">
                                 <div className="album-name">
